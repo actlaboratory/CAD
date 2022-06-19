@@ -41,7 +41,7 @@ class Dialog(BaseDialog):
 
 	def ok(self,event):
 		if self.validationPattern:
-			if len(re.sub(self.validationPattern,"\\1",self.edit.GetLineText(0))) != len(self.edit.GetLineText(0)):
+			if not re.fullmatch(self.validationPattern,self.edit.GetLineText(0)):
 				return
 		event.Skip()
 
