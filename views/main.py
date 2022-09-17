@@ -69,8 +69,14 @@ class MainView(BaseView):
 					fp.seek(0)
 					self.data["file"] = fp.read().decode(encoding=self.getTextEncoding(fp),errors="replace")
 		else:
+			# 標準入力に何もない
+			if sys.stdin.isatty():
+				return
+
 			# 標準入力から
 			input = sys.stdin.read()
+			if not self.input:
+				return
 			try:
 				self.data = json.loads(input,strict=False)
 			except json.decoder.JSONDecodeError as ex:
