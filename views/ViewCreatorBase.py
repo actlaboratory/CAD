@@ -8,6 +8,7 @@ import pywintypes
 import win32api
 import _winxptheme
 import wx
+import  wx.lib.scrolledpanel
 #import wx.adv
 
 from . import fontManager
@@ -84,7 +85,7 @@ class ViewCreatorBase():
 		self.font=fontManager.FontManager()
 
 		#親ウィンドウ
-		if type(parent) in (wx.Panel,):
+		if type(parent) in [wx.Panel,  wx.lib.scrolledpanel.ScrolledPanel]:
 			self.parent=parent
 			self._setFace(parent)
 		elif isinstance(parent, wx.Notebook) or isinstance(parent, wx.Choicebook) or isinstance(parent, wx.Listbook):

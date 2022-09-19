@@ -22,9 +22,9 @@ from .base import *
 from simpleDialog import *
 
 from views import globalKeyConfig
-from views import sample
 from views import settingsDialog
 from views import versionDialog
+from views import ServiceEditDialog
 
 class MainView(BaseView):
 	def __init__(self):
@@ -123,6 +123,7 @@ class MainView(BaseView):
 class Menu(BaseMenu):
 	def Apply(self,target):
 		"""指定されたウィンドウに、メニューを適用する。"""
+		events = self.parent.events
 
 		#メニュー内容をいったんクリア
 		self.hMenuBar=wx.MenuBar()
@@ -133,20 +134,20 @@ class Menu(BaseMenu):
 		self.hHelpMenu=wx.Menu()
 
 		#ファイルメニュー
-		self.RegisterMenuCommand(self.hFileMenu,[
-				"FILE_EXAMPLE",
-		])
+		self.RegisterMenuCommand(self.hFileMenu,{
+			"FILE_SERVICE_EDIT" : events.serviceEdit,
+		})
 
-		self.RegisterMenuCommand(self.hOptionMenu,[
-			"OPTION_OPTION",
-			"OPTION_KEY_CONFIG",
-		])
+		self.RegisterMenuCommand(self.hOptionMenu,{
+			"OPTION_OPTION" : events.option,
+			"OPTION_KEY_CONFIG" : events.keyConfig,
+		})
 
 		#ヘルプメニューの中身
-		self.RegisterMenuCommand(self.hHelpMenu,[
-				"HELP_UPDATE",
-				"HELP_VERSIONINFO",
-		])
+		self.RegisterMenuCommand(self.hHelpMenu,{
+			"HELP_UPDATE" : events.update,
+			"HELP_VERSIONINFO" : events.versionInfo,
+		})
 
 		#メニューバーの生成
 		self.hMenuBar.Append(self.hFileMenu,_("ファイル"))
@@ -155,39 +156,36 @@ class Menu(BaseMenu):
 		target.SetMenuBar(self.hMenuBar)
 
 class Events(BaseEvents):
-	def OnMenuSelect(self,event):
-		"""メニュー項目が選択されたときのイベントハンドら。"""
-		#ショートカットキーが無効状態のときは何もしない
-		if not self.parent.shortcutEnable:
-			event.Skip()
-			return
+	def serviceEdit(self, event):
+		service = {
+			"name" : "",
+			"memo" : "",
+			"baseUri" : {},
+			"headers" : {},
+		}
+		d = ServiceEditDialog.Dialog()
+		d.Initialize(service)
+		d.Show()
 
-		selected=event.GetId()#メニュー識別しの数値が出る
+	def option(self, event):
+		d = settingsDialog.Dialog()
+		d.Initialize()
+		d.Show()
 
-		if selected==menuItemsStore.getRef("FILE_EXAMPLE"):
-			d = sample.Dialog()
-			d.Initialize()
-			r = d.Show()
+	def keyConfig(self, event):
+		if self.setKeymap(self.parent.identifier,_("ショートカットキーの設定"),filter=keymap.KeyFilter().SetDefault(False,False)):
+			#ショートカットキーの変更適用とメニューバーの再描画
+			self.parent.menu.InitShortcut()
+			self.parent.menu.ApplyShortcut(self.parent.hFrame)
+			self.parent.menu.Apply(self.parent.hFrame)
 
-		if selected == menuItemsStore.getRef("OPTION_OPTION"):
-			d = settingsDialog.Dialog()
-			d.Initialize()
-			d.Show()
+	def update(self, event):
+		globalVars.update.update()
 
-		if selected == menuItemsStore.getRef("OPTION_KEY_CONFIG"):
-			if self.setKeymap(self.parent.identifier,_("ショートカットキーの設定"),filter=keymap.KeyFilter().SetDefault(False,False)):
-				#ショートカットキーの変更適用とメニューバーの再描画
-				self.parent.menu.InitShortcut()
-				self.parent.menu.ApplyShortcut(self.parent.hFrame)
-				self.parent.menu.Apply(self.parent.hFrame)
-
-		if selected == menuItemsStore.getRef("HELP_UPDATE"):
-			globalVars.update.update()
-
-		if selected==menuItemsStore.getRef("HELP_VERSIONINFO"):
-			d = versionDialog.dialog()
-			d.Initialize()
-			r = d.Show()
+	def versionInfo(self, event):
+		d = versionDialog.dialog()
+		d.Initialize()
+		r = d.Show()
 
 
 	def setKeymap(self, identifier,ttl, keymap=None,filter=None):
