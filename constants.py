@@ -1,16 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
 #constant values
-#Copyright (C) 20XX anonimous <anonimous@sample.com>
+#Copyright (C) 2023 yamahubuki<itiro.ishino@gmail.com>
 
 import wx
+
 
 #アプリケーション基本情報
 APP_FULL_NAME = "Curl based API Debugger"#アプリケーションの完全な名前
 APP_NAME="cad"#アプリケーションの名前
 APP_ICON = None
-APP_VERSION="2109.10.552"
+APP_VERSION="1.1.0"
 APP_LAST_RELEASE_DATE="20xx-xx-xx"
-APP_COPYRIGHT_YEAR="2021"
+APP_COPYRIGHT_YEAR="2023"
 APP_LICENSE="Apache License 2.0"
 APP_DEVELOPERS="yamahubuki,ACT Laboratory"
 APP_DEVELOPERS_URL="https://actlab.com/"
@@ -24,6 +25,7 @@ LOG_PREFIX="cad"
 LOG_FILE_NAME="application.log"
 SETTING_FILE_NAME="settings.ini"
 KEYMAP_FILE_NAME="keymap.ini"
+SERVICE_PROVIDERS_FILE_NAME = "save_sp.dat"
 
 
 
@@ -48,5 +50,4 @@ UPDATE_URL = "https://actlab.org/api/checkUpdate"
 UPDATER_VERSION = "1.0.0"
 UPDATER_WAKE_WORD = "hello"
 
-# �w�b�_�̃^�C�v
-HEADER_TYPE_CONST = 0
+
