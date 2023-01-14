@@ -13,4 +13,4 @@ dist/
 *.spec
 pl_auto_save
 runCMD.bat
-./save_*
+save_*
