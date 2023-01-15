@@ -59,14 +59,8 @@ class Dialog(BaseDialog):
 		self.deleteButton.Enable(self.list.GetFocusedItem()>=0)
 
 	def add(self, event):
-		service = {
-			"name" : "",
-			"memo" : "",
-			"baseUri" : {},
-			"headers" : {},
-		}
 		d = EditDialog()
-		d.Initialize(service, self.wnd)
+		d.Initialize(ServiceProvider.ServiceProvider(_("新規プロバイダ"), ContentType.JSON), self.wnd)
 		if d.Show() == wx.ID_OK:
 			self.list.Append(d.GetValue())
 
@@ -75,15 +69,8 @@ class Dialog(BaseDialog):
 		if index < 0:
 			return
 		target = self.lst[index]
-		service = {
-			"baseUri" : target.getBaseUris(),
-			"contentType" : target.getContentType(),
-			"headers" : target.getHeaders(),
-			"memo" : target.getMemo(),
-			"name" : target.getName(),
-		}
 		d = EditDialog()
-		d.Initialize(service, self.wnd)
+		d.Initialize(target, self.wnd)
 		result = d.Show()
 		if result == wx.ID_OK:
 			self.list[index] = d.GetValue()
@@ -118,10 +105,11 @@ class EditDialog(BaseDialog):
 	def Initialize(self, provider, parent):
 		self.log.debug("created")
 		super().Initialize(parent,_("サービスプロバイダ編集"))
-		self.InstallControls(provider)
+		self.provider = provider
+		self.InstallControls()
 		return True
 
-	def InstallControls(self, provider):
+	def InstallControls(self):
 		# 画面をスクロール可能にする
 		panel = wx.lib.scrolledpanel.ScrolledPanel(self.panel,wx.ID_ANY, size=(850,500))
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,None,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
@@ -131,18 +119,18 @@ class EditDialog(BaseDialog):
 		grid=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,views.ViewCreator.FlexGridSizer,20,2)
 
 		# 設定につける名前
-		self.name, dummy = grid.inputbox(_("名前"), None, provider["name"], wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
+		self.name, dummy = grid.inputbox(_("名前"), None, self.provider.getName(), wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 		self.name.hideScrollBar(wx.HORIZONTAL)
 
 		# 通信形式
-		self.contentType, dummy = grid.combobox(_("通信形式"), ["application/json","application/x-www-form-urlencoded"], None, state=0)
+		self.contentType, dummy = grid.combobox(_("通信形式"), ["application/json","application/x-www-form-urlencoded"], None, state=self.provider.getContentType().value)
 
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
 
 		# ベースURI
 		tmp1 = {}
 		tmp2 = {}
-		for i in provider["baseUri"]:
+		for i in self.provider.getBaseUris():
 			tmp1[i.getName()] = i.getAddress()
 			tmp2[i.getName()] = i.getPort()
 
@@ -162,7 +150,7 @@ class EditDialog(BaseDialog):
 		# 共通ヘッダ
 		tmp1 = {}
 		tmp2 = {}
-		for i in provider["headers"]:
+		for i in self.provider.getHeaders():
 			tmp1[i.getName()] = i.getFieldType().view_name
 			tmp2[i.getName()] = i.getValue()
 
@@ -180,7 +168,7 @@ class EditDialog(BaseDialog):
 		)
 		self.headers.Initialize(self.wnd, creator, _("ヘッダ"))
 
-		self.memo,dummy = creator.inputbox(_("メモ"), None, provider["memo"], wx.TE_MULTILINE|wx.BORDER_RAISED, 500, sizerFlag=wx.EXPAND|wx.ALL)
+		self.memo,dummy = creator.inputbox(_("メモ"), None, self.provider.getMemo(), wx.TE_MULTILINE|wx.BORDER_RAISED, 500, sizerFlag=wx.EXPAND|wx.ALL)
 		self.memo.hideScrollBar(wx.HORIZONTAL)
 
 		hCreator=views.ViewCreator.ViewCreator(self.viewMode,self.panel,self.sizer,wx.HORIZONTAL,20,style=wx.ALL|wx.ALIGN_RIGHT,margin=20)
