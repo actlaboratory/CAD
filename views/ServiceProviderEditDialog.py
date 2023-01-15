@@ -1,16 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
 # サービスプロバイダ設定ダイアログ
 
-import traceback
-import pickle
 import wx
 import wx.lib.scrolledpanel
 
-import constants
-import globalVars
 import simpleDialog
 import views.KeyValueSettingArea
 import views.ViewCreator
+
+from dao.ServiceProviderDao import ServiceProviderDao
 
 from enumClasses import ContentType
 from enumClasses import HeaderFieldType
@@ -100,26 +98,18 @@ class Dialog(BaseDialog):
 			self.list.DeleteItem(index)
 
 	def apply(self, event):
-		self.log.debug("saving list to " + constants.SERVICE_PROVIDERS_FILE_NAME)
 		try:
-			with open(constants.SERVICE_PROVIDERS_FILE_NAME, 'wb') as f:
-				pickle.dump(self.lst, f)
-		except IOError as e:
-			self.log.error(traceback.format_exc())
-			print(self.format_exc())
-			return
-		event.Skip()
+			ServiceProviderDao.saveAll(self.lst)
+			event.Skip()
+		except Exception as e:
+			simpleDialog.dialog(_("エラー"), _("保存に失敗しました。\n\n") + str(e))
 
 	def load(self):
-		self.log.debug("loading list to " + constants.SERVICE_PROVIDERS_FILE_NAME)
 		try:
-			with open(constants.SERVICE_PROVIDERS_FILE_NAME, 'rb') as f:
-				return pickle.load(f)
-		except IOError as e:
-			self.log.error(traceback.format_exc())
-			print(self.format_exc())
+			return ServiceProviderDao.loadAll()
+		except Exception as e:
+			simpleDialog.dialog(_("エラー"), _("読込に失敗しました。\n\n") + str(e))
 			return []
-
 
 class EditDialog(BaseDialog):
 	def __init__(self):
@@ -194,7 +184,7 @@ class EditDialog(BaseDialog):
 		self.memo.hideScrollBar(wx.HORIZONTAL)
 
 		hCreator=views.ViewCreator.ViewCreator(self.viewMode,self.panel,self.sizer,wx.HORIZONTAL,20,style=wx.ALL|wx.ALIGN_RIGHT,margin=20)
-		closeButton=hCreator.okbutton(_("OK"), self.processEnter)
+		okButton=hCreator.okbutton(_("OK"), self.processEnter)
 		cancelButton=hCreator.cancelbutton(_("キャンセル"))
 
 		panel.SetupScrolling()
@@ -229,11 +219,11 @@ class EditDialog(BaseDialog):
 			headers.append(Header.Header(names[i], HeaderFieldType[fieldTypes[i]], values[i]))
 
 		return ServiceProvider.ServiceProvider(
-			self.name.GetValue(),
+			self.name.GetValue().strip(),
 			ContentType(self.contentType.GetSelection()),
 			baseUri,
 			headers,
-			self.memo.GetValue()
+			self.memo.GetValue().strip()
 		)
 
 class HeaderSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
