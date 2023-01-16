@@ -13,3 +13,9 @@ defaultKeymap["mainView"]={
 	"HELP_UPDATE":"",
 	"HELP_VERSIONINFO":"",
 }
+
+defaultKeymap["ServiceProviderDialog"] = {
+	"ADD": "Ctrl+N",
+	"DELETE": "delete/Ctrl+D",
+	"EDIT": "F2",
+}

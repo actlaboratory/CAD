@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # ベースURIエンティティ
-
+#Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 ADDRESS_MIN_LENGTH = 10
 

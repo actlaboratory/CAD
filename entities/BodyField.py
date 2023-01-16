@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# ヘッダエンティティ
+# フィールドエンティティ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
-from enumClasses import ContentType, HeaderFieldType
 
-class Header:
+class BodyField:
 	def __init__(self, name, fieldType,value):
 		if validateName(name) or validateFieldType(fieldType) or validateValue(value):
 			raise ValueError()
@@ -27,9 +26,6 @@ def validateName(name):
 	name = name.strip()
 	if not len(name):
 		return _("名前を入力してください。")
-	for c in name.encode("utf-8"):
-		if c < 0x20 or c >= 0x7f:	#印字可能なASCII文字のみ使用可能
-			return _("使用できない文字が含まれています。")
 	return ""
 
 def validateValue(value):

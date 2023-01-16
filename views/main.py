@@ -24,7 +24,7 @@ from simpleDialog import *
 from views import globalKeyConfig
 from views import settingsDialog
 from views import versionDialog
-from views import ServiceProviderEditDialog
+from views import ServiceProviderDialog
 
 class MainView(BaseView):
 	def __init__(self):
@@ -135,7 +135,7 @@ class Menu(BaseMenu):
 
 		#ファイルメニュー
 		self.RegisterMenuCommand(self.hFileMenu,{
-			"FILE_SERVICE_PROVIDER_EDIT" : events.serviceProviderEdit,
+			"FILE_SERVICE_PROVIDER" : events.serviceProvider,
 		})
 
 		self.RegisterMenuCommand(self.hOptionMenu,{
@@ -156,8 +156,8 @@ class Menu(BaseMenu):
 		target.SetMenuBar(self.hMenuBar)
 
 class Events(BaseEvents):
-	def serviceProviderEdit(self, event):
-		d = ServiceProviderEditDialog.Dialog()
+	def serviceProvider(self, event):
+		d = ServiceProviderDialog.Dialog()
 		d.Initialize()
 		d.Show()
 

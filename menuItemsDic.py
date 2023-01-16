@@ -9,7 +9,7 @@ def getValueString(ref_id):
 	return re.sub("&", "", s)
 
 dic={
-	"FILE_SERVICE_PROVIDER_EDIT":_("サービスプロバイダ設定")+"...",
+	"FILE_SERVICE_PROVIDER":_("サービスプロバイダ一覧")+"...",
 	"FILE_EXAMPLE":_("テストダイアログを閲覧")+"...",
 
 	"OPTION_OPTION":_("オプション(&O)")+"...",
