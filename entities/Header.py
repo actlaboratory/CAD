@@ -6,7 +6,7 @@ from enumClasses import ContentType, HeaderFieldType
 
 class Header:
 	def __init__(self, name, fieldType,value):
-		if validateName(name) or validateFieldType(fieldType) or validateValue(value):
+		if validateName(name) or validateFieldType(fieldType) or validateValue(fieldType, value):
 			raise ValueError()
 		self.name = name
 		self.fieldType = fieldType
@@ -32,11 +32,11 @@ def validateName(name):
 			return _("使用できない文字が含まれています。")
 	return ""
 
-def validateValue(value):
+def validateValue(fieldType, value):
 	assert isinstance(value, str)
 	value = value.strip()
-	if not len(value):
-		return _("名前を入力してください");
+	if fieldType != HeaderFieldType.EDITABLE and not len(value):
+		return _("値を入力してください");
 	return ""
 
 def validateFieldType(fieldType):

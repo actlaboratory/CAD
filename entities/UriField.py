@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# フィールドエンティティ
+# URIフィールドエンティティ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
-from enumClasses import BodyFieldType
+from enumClasses import UriFieldType
 
-class BodyField:
+class UriField:
 	def __init__(self, name, fieldType,value):
 		if validateName(name) or validateFieldType(fieldType) or validateValue(fieldType, value):
 			raise ValueError()
@@ -32,9 +32,9 @@ def validateName(name):
 def validateValue(fieldType, value):
 	assert isinstance(value, str)
 	value = value.strip()
-	if fieldType != BodyFieldType.EDITABLE and not len(value):
+	if fieldType != UriFieldType.EDITABLE and not len(value):
 		return _("値を入力してください");
 	return ""
 
 def validateFieldType(fieldType):
-	assert isinstance(fieldType, BodyFieldType)
+	assert isinstance(fieldType, UriFieldType)

@@ -8,8 +8,8 @@ import simpleDialog
 import views.KeyValueSettingArea
 import views.ViewCreator
 
-from entities import Endpoint, Header
-from enumClasses import BodyFieldType, ContentType, Method
+from entities import BodyField, Endpoint, Header, UriField
+from enumClasses import BodyFieldType, ContentType, Method, UriFieldType
 from simpleDialog import errorDialog
 from views.baseDialog import *
 
@@ -46,7 +46,28 @@ class EndpointEditDialog(BaseDialog):
 		self.uri, dummy = grid.inputbox(_("URI"), None, self.endpoint.getUri(), wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 		self.uri.hideScrollBar(wx.HORIZONTAL)
 
-		# ベースURI
+		# URIフィールド
+		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
+		tmp1 = {}
+		tmp2 = {}
+		for i in self.endpoint.getUriFields():
+			tmp1[i.getName()] = i.getFieldType().view_name
+			tmp2[i.getName()] = i.getValue()
+
+		self.uriFields = views.KeyValueSettingArea.KeyValueSettingArea(
+			"uriField",
+			UriFieldSettingDialog,
+			[
+				(_("名前"), 0, 200),
+				(_("値の種類"), 0, 200),
+				(_("値"),0, 300)
+			],
+			tmp1,
+			tmp2,
+		)
+		self.uriFields.Initialize(self.wnd, creator, _("Uriフィールド"))
+
+		# bodyフィールド
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
 		tmp1 = {}
 		tmp2 = {}
@@ -112,6 +133,19 @@ class EndpointEditDialog(BaseDialog):
 			errorDialog(error, self.wnd)
 			return
 
+
+		uriFields = []
+		values = self.uriFields.GetValue()
+		names = list(values[0].keys())
+		fieldTypes = list(values[0].values())
+		values = list(values[1].values())
+		for i in range(len(names)):
+			uriFields.append(UriField.UriField(names[i], UriFieldType[fieldTypes[i]], values[i]))
+		error = Endpoint.validateUriFields(self.uri.GetValue(), uriFields)
+		if error:
+			errorDialog(error, self.wnd)
+			return
+
 		error = Endpoint.validateMemo(self.memo.GetValue())
 		if error:
 			errorDialog(error, self.wnd)
@@ -119,6 +153,14 @@ class EndpointEditDialog(BaseDialog):
 		self.wnd.EndModal(wx.ID_OK)
 
 	def GetData(self):
+		uriFields = []
+		values = self.uriFields.GetValue()
+		names = list(values[0].keys())
+		fieldTypes = list(values[0].values())
+		values = list(values[1].values())
+		for i in range(len(names)):
+			uriFields.append(UriField.UriField(names[i], UriFieldType[fieldTypes[i]], values[i]))
+
 		bodyFields = []
 		values = self.bodyFields.GetValue()
 		names = list(values[0].keys())
@@ -140,6 +182,7 @@ class EndpointEditDialog(BaseDialog):
 			self.name.GetValue().strip(),
 			Method(self.method.GetSelection()),
 			self.uri.GetValue().strip(),
+			uriFields,
 			bodyFields,
 			ContentType(self.contentType.GetSelection() - 1) if self.contentType.GetSelection() > 0 else None,
 			headers,
@@ -170,7 +213,7 @@ class AditionalHeaderSettingDialog(views.KeyValueSettingDialogBase.SettingDialog
 			errorDialog(error, self.wnd)
 			return
 
-		error = Header.validateValue(self.edits[2].GetValue())
+		error = Header.validateValue(HeaderFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return
@@ -203,12 +246,49 @@ class BodyFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 		return super().Initialize(_("ヘッダ設定"))
 
 	def Validation(self,event):
-		error = Header.validateName(self.edits[0].GetValue())
+		error = BodyField.validateName(self.edits[0].GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return
 
-		error = Header.validateValue(self.edits[2].GetValue())
+		error = BodyField.validateValue(BodyFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
+		if error:
+			errorDialog(error, self.wnd)
+			return
+		event.Skip()
+
+	def GetData(self):
+		return [
+			self.edits[0].GetValue().strip(),
+			self.edits[1].GetStringSelection(),
+			self.edits[2].GetValue().strip()
+		]
+
+class UriFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
+	"""Uriフィールドの設定内容を入力するダイアログ"""
+
+	def __init__(self, parent, key="", headerType=_("固定値"), body=""):
+		super().__init__(
+			parent,
+			[
+				(_("フィールド名"), True),
+				(_("タイプ"), (_("固定値"), _("編集可能"))),
+				(_("値"), True),
+			],
+			[None]*3,
+			key,headerType,body
+		)
+
+	def Initialize(self):
+		return super().Initialize(_("ヘッダ設定"))
+
+	def Validation(self,event):
+		error = UriField.validateName(self.edits[0].GetValue())
+		if error:
+			errorDialog(error, self.wnd)
+			return
+
+		error = UriField.validateValue(UriFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return

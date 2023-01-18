@@ -159,7 +159,7 @@ class HeaderSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 			errorDialog(error, self.wnd)
 			return
 
-		error = Header.validateValue(self.edits[2].GetValue())
+		error = Header.validateValue(HeaderFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return

@@ -3,18 +3,21 @@
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 import copy
+import re
 
 from enumClasses import ContentType, Method
 from .BodyField import BodyField
 from .Header import Header
+from .UriField import UriField
 
 class Endpoint:
 
-	def __init__(self, parent, name, method, uri, body, contentType=None, headers=[], memo=""):
+	def __init__(self, parent, name, method, uri, uriFields, body, contentType=None, headers=[], memo=""):
 		if (
 			validateName(name) or
 			type(method) is not Method or
 			validateUri(uri) or
+			validateUriFields(uri, uriFields) or
 			validateBody((contentType if contentType else parent.getContentType()), body) or
 			type(contentType) is not ContentType and contentType is not None or
 			validateHeaders(headers) or
@@ -27,6 +30,7 @@ class Endpoint:
 		self.method = method
 		self.name = name.strip()
 		self.uri = uri
+		self.uriFields = uriFields
 
 	def getAditionalHeaders(self):
 		return copy.deepcopy(self.aditionalHeaders)
@@ -49,6 +53,9 @@ class Endpoint:
 	def getUri(self):
 		return self.uri
 
+	def getUriFields(self):
+		return self.uriFields
+
 	# リスト表示用項目
 	def GetListTuple(self):
 		return self.name, self.memo
@@ -62,6 +69,11 @@ class Endpoint:
 	def __setitem__(self, index, obj):
 		raise NotImplementedError
 
+def getNeedFieldsFromUri(uri):
+	"""
+		Uriを完成させるために指定が必要なフィールド名の一覧を返す
+	"""
+	return re.findall(r"\{(.+?)\}", uri)
 
 def validateBody(contentType, body):
 	if contentType in (contentType.JSON, contentType.FORM):
@@ -92,4 +104,16 @@ def validateUri(uri):
 	uri = uri.strip()
 	if not len(uri):
 		return _("URIを入力してください。")
+	return ""
+
+def validateUriFields(uri, fields):
+	assert type(fields) == list
+	needs = getNeedFieldsFromUri(uri)
+	for item in fields:
+		assert type(item) == UriField
+		if item.getName() not in needs:
+			return _("Uriフィールド%sはUriの中で指定されていません。" % item.getName())
+		needs.remove(item.getName())
+	for item in needs:
+		return _("uriフィールド%sは値が設定されていません。" % item)
 	return ""
