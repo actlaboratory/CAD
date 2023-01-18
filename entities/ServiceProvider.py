@@ -27,16 +27,16 @@ class ServiceProvider:
 		self.endpoints = []
 
 	def getBaseUris(self):
-		return self.baseUris
+		return copy.deepcopy(self.baseUris)
 
 	def getContentType(self):
 		return self.contentType
 
 	def getEndpoints(self):
-		return self.endpoints
+		return copy.deepcopy(self.endpoints)
 
 	def getHeaders(self):
-		return self.headers
+		return copy.deepcopy(self.headers)
 
 	def getMemo(self):
 		return self.memo

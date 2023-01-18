@@ -60,7 +60,7 @@ class EndpointDialog(BaseDialog):
 
 	def add(self, event=None):
 		d = EndpointEditDialog()
-		d.Initialize(self.provider, Endpoint.Endpoint(self.provider, _("新規エンドポイント"), Method.GET, "/", []), self.wnd)
+		d.Initialize(self.provider, Endpoint.Endpoint(self.provider, _("新規エンドポイント"), Method.GET, "/", [], []), self.wnd)
 		if d.Show() == wx.ID_OK:
 			self.list.Append(d.GetValue())
 			self.save()

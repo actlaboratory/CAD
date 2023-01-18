@@ -19,3 +19,9 @@ defaultKeymap["ServiceProviderDialog"] = {
 	"DELETE": "delete/Ctrl+D",
 	"EDIT": "F2",
 }
+
+defaultKeymap["EndpointDialog"] = {
+	"ADD": "Ctrl+N",
+	"DELETE": "delete/Ctrl+D",
+	"EDIT": "F2",
+}
