@@ -13,7 +13,7 @@ from enumClasses import Method
 from simpleDialog import errorDialog
 from views.baseDialog import *
 from views.EndpointEditDialog import *
-
+from views.RequestEditDialog import *
 
 class EndpointDialog(BaseDialog):
 	def __init__(self):
@@ -56,7 +56,10 @@ class EndpointDialog(BaseDialog):
 		self.deleteButton.Enable(self.list.GetFocusedItem()>=0)
 
 	def activate(self, target):
-		pass
+		d = RequestEditDialog()
+		d.InitializeFromEndpoint(self, self.provider, target)
+		d.Show()
+		print(d.GetValue())
 
 	def add(self, event=None):
 		d = EndpointEditDialog()
