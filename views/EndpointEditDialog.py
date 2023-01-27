@@ -272,7 +272,7 @@ class UriFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 			parent,
 			[
 				(_("フィールド名"), True),
-				(_("タイプ"), (_("固定値"), _("編集可能"))),
+				(_("タイプ"), (_("編集可能"),)),
 				(_("値"), True),
 			],
 			[None]*3,

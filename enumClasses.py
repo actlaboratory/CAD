@@ -73,25 +73,20 @@ class Method(IntEnum):
 
 class UriFieldTypeEnumMeta(EnumMeta):
 	def __getitem__(self, value):
-		if value == _("固定値"):
-			return super().__getitem__("CONST")
-		elif value == _("編集可能"):
+		if value == _("編集可能"):
 			return super().__getitem__("EDITABLE")
 		else:
 			return super().__getitem__(value)
 
 @unique
 class UriFieldType(IntEnum, metaclass=UriFieldTypeEnumMeta):
-	CONST = 0
-	EDITABLE = 1
-	SELECT = 2
+	EDITABLE = 0
+	SELECT = 1
 
 	@property
 	def view_name(self):
 		"""The name of the Enum member."""
-		if self._name_ == "CONST":
-			return _("固定値")
-		elif self._name_ == "EDITABLE":
+		if self._name_ == "EDITABLE":
 			return _("編集可能")
 		elif self._name_ == "SELECT":
 			return _("選択")
