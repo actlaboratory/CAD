@@ -2,6 +2,8 @@
 # ベースURIエンティティ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
+from urllib3.util.url import parse_url
+
 ADDRESS_MIN_LENGTH = 10
 
 class BaseUri:
@@ -35,6 +37,24 @@ def validateAddress(address):
 		return _("アドレスを%d文字以上で入力してください" % ADDRESS_MIN_LENGTH)
 	if not address.startswith("https://") and not address.startswith("http://"):
 		return _("アドレスはhttps://またはhttp://で始まる必要があります。")
+	try:
+		url = parse_url(address)
+		if not url.scheme:
+			return _("アドレスが不正です。")
+		elif url.auth:
+			return _("認証情報はアドレスではなくAuthorizationヘッダで指定してください。")
+		elif not url.host:
+			return _("アドレスにホスト名が含まれていません。")
+		elif url.port:
+			return _("ポート番号はアドレスではなく専用の入力欄で指定してください。")
+		elif url.query:
+			return _("ベースURLでクエリを指定することはできません。クエリはエンドポイントの設定時に指定してください。")
+		elif url.fragment:
+			return _("ベースURLでフラグメントを指定することはできません。フラグメントはエンドポイントの設定時に指定してください。")
+	except:
+		import traceback
+		traceback.print_exc()
+		return _("アドレスが不正です。")
 	return ""
 
 def validatePort(port):
