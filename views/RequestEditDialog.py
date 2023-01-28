@@ -59,6 +59,7 @@ class RequestEditDialog(BaseDialog):
 		# 名前　いったん固定
 		self.name, dummy = grid.inputbox(_("名前"), None, defaults["name"], wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 		self.name.hideScrollBar(wx.HORIZONTAL)
+		self.name.SetMaxSize((600,200))
 		if defaults["name"]:
 			self.name.Hide()
 
@@ -69,7 +70,7 @@ class RequestEditDialog(BaseDialog):
 			self.uri.Hide()
 			# ベースURI
 			self.baseUris, dummy = grid.combobox(_("ベースURI"), ["%s (%s:%s)" %(item.getName(),item.getAddress(),item.getPort()) for item in defaults["baseUris"]], state=0)
-			self.baseUris.SetMaxSize((400,200))
+			self.baseUris.SetMaxSize((600,200))
 		else:
 			self.baseUris = None
 
@@ -152,7 +153,6 @@ class RequestEditDialog(BaseDialog):
 				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
 			else:
 				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v.GetValue()))
-
 
 		return Request.Request(
 			self.name.GetValue(),
