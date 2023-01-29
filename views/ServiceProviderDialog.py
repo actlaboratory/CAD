@@ -24,6 +24,7 @@ class Dialog(BaseDialog):
 	def __init__(self):
 		super().__init__("ServiceProviderDialog")
 		self.lst = self.load()
+		self.result = None
 
 	def Initialize(self, parent=None):
 		self.log.debug("created")
@@ -63,7 +64,9 @@ class Dialog(BaseDialog):
 	def activate(self, target):
 		d = EndpointDialog()
 		d.Initialize(target, self)
-		d.Show()
+		if d.Show() == wx.ID_EXECUTE:
+			self.result = d.GetValue()
+			self.wnd.EndModal(wx.ID_EXECUTE)
 
 	def add(self, event=None):
 		d = ServiceProviderEditDialog()
@@ -129,3 +132,6 @@ class Dialog(BaseDialog):
 				self.edit()
 				return
 		event.Skip()
+
+	def GetData(self):
+		return self.result

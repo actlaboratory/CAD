@@ -18,6 +18,7 @@ from views.RequestEditDialog import *
 class EndpointDialog(BaseDialog):
 	def __init__(self):
 		super().__init__("endpointDialog")
+		self.result = None
 
 	def Initialize(self, provider, parent):
 		self.log.debug("created with" + provider.getName())
@@ -58,8 +59,10 @@ class EndpointDialog(BaseDialog):
 	def activate(self, target):
 		d = RequestEditDialog()
 		d.InitializeFromEndpoint(self, self.provider, target)
-		d.Show()
-		print(d.GetValue())
+		if d.Show() == wx.ID_OK:
+			self.result = d.GetValue()
+			self.wnd.EndModal(wx.ID_EXECUTE)
+
 
 	def add(self, event=None):
 		d = EndpointEditDialog()
@@ -116,3 +119,6 @@ class EndpointDialog(BaseDialog):
 				self.edit()
 				return
 		event.Skip()
+
+	def GetData(self):
+		return self.result

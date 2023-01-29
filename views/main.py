@@ -3,9 +3,12 @@
 #Copyright (C) 2019 Yukio Nozawa <personal@nyanchangames.com>
 #Copyright (C) 2019-2021 yamahubuki <itiro.ishino@gmail.com>
 
+import collections.abc
 import json
+import requests
 import sys
 import wx
+
 
 import constants
 import globalVars
@@ -81,9 +84,14 @@ class MainView(BaseView):
 				self.data = json.loads(input,strict=False)
 			except json.decoder.JSONDecodeError as ex:
 				self.data["input"] = input
+		self.showData()
+
+	# self.dataに入れたものを表示する
+	def showData(self):
+		self.tree.DeleteAllItems()
 		root = self.tree.AddRoot('Root')
 		self.tree.SetItemData(root, self.data)
-		if type(self.data) == dict:
+		if isinstance(self.data, collections.abc.MutableMapping):
 			for key, value in self.data.items():
 				self.setTreeData(root, key, value)
 		elif type(self.data) == list:
@@ -97,7 +105,7 @@ class MainView(BaseView):
 	def setTreeData(self, node: wx.TreeItemId, key, value):
 		id = self.tree.AppendItem(node, key)
 		self.tree.SetItemData(id, value)
-		if isinstance(value, dict):
+		if isinstance(value, collections.abc.MutableMapping):
 			for k, v in value.items():
 				self.setTreeData(id, k, v)
 		elif isinstance(value, list):
@@ -159,7 +167,35 @@ class Events(BaseEvents):
 	def serviceProvider(self, event):
 		d = ServiceProviderDialog.Dialog()
 		d.Initialize()
-		d.Show()
+		if d.Show() == wx.ID_EXECUTE:
+			req = d.GetValue()
+			data = {
+				"RequestInfo": {
+					"method": req.method,
+					"url": req.url,
+					"headers":req.headers,
+				},
+				"RequestBody":None,
+				"ResponseInfo":{},
+				"ResponseBody":None,
+			}
+			try:
+				data["RequestBody"] = json.loads(req.body)
+			except:
+				data["RequestBody"] = str(req.body)
+
+			with requests.Session() as sess:
+				res = sess.send(req, allow_redirects=False)
+				data["ResponseInfo"]["status_code"] = res.status_code
+				data["ResponseInfo"]["reason"] = res.reason
+				data["ResponseInfo"]["elapsed"] = res.elapsed
+				data["ResponseInfo"]["headers"] = res.headers
+				try:
+					data["ResponseBody"] = res.json()
+				except:
+					data["ResponseBody"] = res.text
+				self.parent.data = data
+				self.parent.showData()
 
 	def option(self, event):
 		d = settingsDialog.Dialog()
@@ -278,7 +314,7 @@ class TreeVisitor:
 			self.tree.SelectItem(child)
 
 	def fill_list(self,data):
-		if isinstance(data, dict):
+		if isinstance(data, collections.abc.MutableMapping):
 			self.lst.DeleteAllItems()
 			for k,v in data.items():
 				self.lst.Append((k, *self.format_value(v)))
