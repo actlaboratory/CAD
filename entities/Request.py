@@ -3,9 +3,10 @@
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 import copy
+import json
+import requests
 
-
-from enumClasses import ContentType, Method
+from enumClasses import ContentType, HeaderFieldType, Method
 from .BodyField import BodyField
 from .Header import Header
 from .BaseUri import BaseUri
@@ -52,9 +53,41 @@ class Request:
 	def getUri(self):
 		return self.uri
 
+	def toRequests(self):
+		headers = copy.deepcopy(self.headers)
+		data = None
+		if self.contentType == ContentType.JSON:
+			# case-insencitiveで比較して、Content-Typeがなければ追加
+			if "content-type" not in [v.getName().lower() for v in headers]:
+				headers.append(Header("Content-Type", HeaderFieldType.CONST, "application/json; charset=utf-8"))
+			if self.body:
+				data = {}
+				for i in self.body:
+					data[i.getName()] = i.getValue()
+				data = json.dumps(data)
+			else:
+				data=None
+		elif self.contentType == ContentType.FORM:
+			data = None
+			# case-insencitiveで比較して、Content-Typeがなければ追加
+			if "content-type" not in [v.getName().lower() for v in headers]:
+				headers.append(Header("Content-Type", HeaderFieldType.CONST, "application/x-www-form-urlencoded"))
+			if self.body:
+				data = {}
+				for i in self.body:
+					data[i.getName()] = i.getValue()
+		else:
+			raise notImplementedError
 
+		headerDict = {}
+		for i in headers:
+			headerDict[i.getName()] = i.getValue()
 
-	# --remote-name指定時に使用
+		req = requests.PreparedRequest()
+		req.prepare(self.method.name, self.uri, headerDict, data=data)
+		return req
+
+	# --remote-nameオプション指定時に使用
 	def getRemoteName(self):
 		raise NotImplementedError	# TODO
 

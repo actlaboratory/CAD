@@ -2,7 +2,7 @@
 # リクエスト設定ダイアログ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
-
+import urllib.parse
 import wx
 
 import views.ViewCreator
@@ -193,7 +193,7 @@ class RequestEditDialog(BaseDialog):
 		for k,v in self.uriFields.items():
 			if type(v) != str:
 				v=v.GetValue()
-			uri.replace("{"+k+"}", v)
+			uri = uri.replace("{"+k+"}", urllib.parse.quote(v))
 
 		headers = []
 		for k,v in self.headers.items():
@@ -216,5 +216,5 @@ class RequestEditDialog(BaseDialog):
 			uri,
 			headers,
 			body
-		)
+		).toRequests()
 
