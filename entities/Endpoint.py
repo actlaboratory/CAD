@@ -10,6 +10,8 @@ from .BodyField import BodyField
 from .Header import Header
 from .UriField import UriField
 
+from urllib3.util.url import parse_url
+
 class Endpoint:
 
 	def __init__(self, parent, name, method, uri, uriFields, body, contentType=None, headers=[], memo=""):
@@ -104,7 +106,21 @@ def validateUri(uri):
 	uri = uri.strip()
 	if not len(uri):
 		return _("URIを入力してください。")
+	try:
+		url = parse_url(uri)
+		if url.auth:
+			return _("認証情報はアドレスではなくAuthorizationヘッダで指定してください。")
+		elif url.scheme and not url.host:
+			return _("アドレスにホスト名が含まれていません。")
+		elif (not url.scheme) and url.port:
+			return _("アドレスにポート番号を含められるのは、スキーム名を含めた完全なURIを入力する場合のみです。")
+
+	except:
+		import traceback
+		traceback.print_exc()
+		return _("アドレスが不正です。")
 	return ""
+
 
 def validateUriFields(uri, fields):
 	assert type(fields) == list

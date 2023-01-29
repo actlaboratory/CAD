@@ -1,11 +1,17 @@
+# -*- coding: utf-8 -*-
+# リクエスト設定ダイアログ
+#Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 
 import wx
 
 import views.ViewCreator
 
-from entities import BodyField, Header, Request
+from urllib3.util.url import parse_url
+
+from entities import BodyField, Endpoint, Header, Request, UriField
 from enumClasses import BodyFieldType, ContentType, HeaderFieldType, Method, UriFieldType
+from simpleDialog import errorDialog
 from views.baseDialog import *
 
 
@@ -69,7 +75,7 @@ class RequestEditDialog(BaseDialog):
 		if defaults["baseUris"]:
 			self.uri.Hide()
 			# ベースURI
-			self.baseUris, dummy = grid.combobox(_("ベースURI"), ["%s (%s:%s)" %(item.getName(),item.getAddress(),item.getPort()) for item in defaults["baseUris"]], state=0)
+			self.baseUris, dummy = grid.combobox(_("ベースURI"), ["%s (%s)" %(item.getName(),item.getAddress()) for item in defaults["baseUris"]], state=0)
 			self.baseUris.SetMaxSize((600,200))
 		else:
 			self.baseUris = None
@@ -101,7 +107,7 @@ class RequestEditDialog(BaseDialog):
 				self.headers[item.getName()] = form
 			else:
 				raise NotImplementedError()
-
+	
 		# URIフィールド
 		self.uriFields = {}
 		for item in defaults["uriFields"]:
@@ -131,14 +137,63 @@ class RequestEditDialog(BaseDialog):
 		panel.SetupScrolling()
 
 	def processEnter(self, event):
-		event.Skip()
+		error = Request.validateName(self.name.GetValue())
+		if error:
+			errorDialog(error, self.wnd)
+			return
+
+		error = Endpoint.validateUri(self.uri.GetValue())
+		if error:
+			errorDialog(error, self.wnd)
+			return
+
+		for k,v in self.headers.items():
+			if type(v) != str:
+				error = Header.validateValue(HeaderFieldType.CONST, v.GetValue())
+				if error:
+					errorDialog(error, self.wnd)
+					return
+
+		for k,v in self.uriFields.items():
+			if type(v) != str:
+				error = UriField.validateValue(None, v.GetValue())
+				if error:
+					errorDialog(error, self.wnd)
+					return
+
+		for k,v in self.body.items():
+			if type(v) != str:
+				error = BodyField.validateValue(BodyFieldType.CONST, v.GetValue())
+				if error:
+					errorDialog(error, self.wnd)
+					return
+
+		self.wnd.EndModal(wx.ID_OK)
+
 
 	def GetData(self):
 		if self.baseUris:
 			baseUri = self.provider.getBaseUris()[self.baseUris.GetSelection()]
-			uri = baseUri.getAddress() + ":" + baseUri.getPort() + self.uri.GetValue()
+			try:
+				base = parse_url(baseUri.getAddress())
+				endpoint = parse_url(self.uri.GetValue())
+				if endpoint.scheme:
+					uri = self.uri.GetValue()
+				else:
+					uri = baseUri.getAddress().rstrip("/")
+					if endpoint.path:
+						uri += "/"
+					uri += self.uri.GetValue().lstrip("/")
+			except:
+				raise ValueError("validation bug found!")
 		else:
 			uri = self.uri.GetValue()
+
+		#URIにUriFieldsを適用
+		for k,v in self.uriFields.items():
+			if type(v) != str:
+				v=v.GetValue()
+			uri.replace("{"+k+"}", v)
 
 		headers = []
 		for k,v in self.headers.items():

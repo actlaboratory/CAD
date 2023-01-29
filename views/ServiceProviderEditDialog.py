@@ -49,11 +49,9 @@ class ServiceProviderEditDialog(BaseDialog):
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
 
 		# ベースURI
-		tmp1 = {}
-		tmp2 = {}
+		tmp = {}
 		for i in self.provider.getBaseUris():
-			tmp1[i.getName()] = i.getAddress()
-			tmp2[i.getName()] = i.getPort()
+			tmp[i.getName()] = i.getAddress()
 
 		self.baseUri = views.KeyValueSettingArea.KeyValueSettingArea(
 			"baseUri",
@@ -61,10 +59,8 @@ class ServiceProviderEditDialog(BaseDialog):
 			[
 				(_("名前"), 0, 200),
 				(_("アドレス"), 0, 450),
-				(_("ポート"),0, 50)
 			],
-			tmp1,
-			tmp2,
+			tmp,
 		)
 		self.baseUri.Initialize(self.wnd, creator, _("ベースURI"))
 
@@ -115,9 +111,8 @@ class ServiceProviderEditDialog(BaseDialog):
 		values = self.baseUri.GetValue()
 		names = list(values[0].keys())
 		addresses = list(values[0].values())
-		ports = list(values[1].values())
 		for i in range(len(names)):
-			baseUri.append(BaseUri.BaseUri(names[i], addresses[i], ports[i]))
+			baseUri.append(BaseUri.BaseUri(names[i], addresses[i]))
 
 		headers = []
 		values = self.headers.GetValue()
@@ -174,16 +169,15 @@ class HeaderSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 
 
 class BaseUriSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
-	def __init__(self, parent, key="", uri="https://", port="443"):
+	def __init__(self, parent, key="", uri="https://"):
 		super().__init__(
 			parent,
 			[
 				(_("名前"), True),
 				(_("アドレス"), True),
-				(_("ポート番号"), True),
 			],
 			[None]*3,
-			key, uri, port
+			key, uri
 		)
 
 	def Initialize(self):
@@ -200,15 +194,10 @@ class BaseUriSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 			errorDialog(error, self.wnd)
 			return
 
-		error = BaseUri.validatePort(self.edits[2].GetValue())
-		if error:
-			errorDialog(error, self.wnd)
-			return
 		event.Skip()
 
 	def GetData(self):
 		return [
 			self.edits[0].GetValue().strip(),
 			self.edits[1].GetValue().strip(),
-			self.edits[2].GetValue().strip()
 		]
