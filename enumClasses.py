@@ -68,8 +68,9 @@ class Method(IntEnum):
 	GET = 0
 	POST = 1
 	PUT = 2
-	DELETE = 3
-	HEADER = 4
+	PATCH = 3
+	DELETE = 4
+	HEADER = 5
 
 class UriFieldTypeEnumMeta(EnumMeta):
 	def __getitem__(self, value):
