@@ -47,6 +47,9 @@ class Request:
 	def getMemo(self):
 		return self.memo
 
+	def getMethod(self):
+		return self.method
+
 	def getName(self):
 		return self.name
 
@@ -134,7 +137,7 @@ def validateUri(uri):
 	assert isinstance(uri, str)
 	uri = uri.strip()
 	if len(uri) < URI_MIN_LENGTH:
-		return _("URIを%d文字以上で入力してください" % ADDRESS_MIN_LENGTH)
+		return _("URIを%d文字以上で入力してください" % URI_MIN_LENGTH)
 	if not uri.startswith("https://") and not uri.startswith("http://"):
 		return _("URIはhttps://またはhttp://で始まる必要があります。")
 	return ""
