@@ -58,7 +58,7 @@ class EndpointDialog(BaseDialog):
 
 	def activate(self, target):
 		d = RequestEditDialog()
-		d.InitializeFromEndpoint(self, self.provider, target)
+		d.InitializeFromEndpoint(self.wnd, self.provider, target)
 		if d.Show() == wx.ID_OK:
 			self.result = d.GetValue()
 			self.wnd.EndModal(wx.ID_EXECUTE)

@@ -5,6 +5,7 @@
 import urllib.parse
 import wx
 
+import views.KeyValueSettingArea
 import views.ViewCreator
 
 from urllib3.util.url import parse_url
@@ -13,6 +14,8 @@ from entities import BodyField, Endpoint, Header, Request, UriField
 from enumClasses import BodyFieldType, ContentType, HeaderFieldType, Method, UriFieldType
 from simpleDialog import errorDialog
 from views.baseDialog import *
+from views.BodyFieldSettingDialog import *
+from views.HeaderSettingDialog import *
 
 
 class RequestEditDialog(BaseDialog):
@@ -20,8 +23,7 @@ class RequestEditDialog(BaseDialog):
 		super().__init__("RequestDialog")
 
 	def InitializeFromEndpoint(self, parent, provider, endpoint):
-		super().Initialize(parent.wnd,_("リクエスト内容編集"))
-		self.parent = parent
+		super().Initialize(parent,_("リクエスト内容編集"))
 		self.provider = provider
 		self.endpoint = endpoint
 		self.log.debug("created with" + provider.getName() and endpoint.getName())
@@ -36,7 +38,7 @@ class RequestEditDialog(BaseDialog):
 			"uri" : endpoint.getUri(),
 			"uriFields" : endpoint.getUriFields(),
 			"body" : endpoint.getBody(),
-			
+			"memo" : ""
 		}
 
 		# ヘッダをエンドポイント優先で追加
@@ -53,7 +55,25 @@ class RequestEditDialog(BaseDialog):
 		self.InstallControls(defaults)
 		return True
 
-	def InstallControls(self, defaults):
+	def InitializeNewRequest(self, parent):
+		super().Initialize(parent,_("リクエスト内容編集"))
+
+		defaults = {
+			"name" : "",
+			"baseUris" : [],
+			"uri" : "",
+			"method" : None,
+			"contentType" : None,
+			"headers" : [],
+			"uriFields" : [],
+			"body" : [],
+			"memo" : "",
+		}
+
+		self.InstallControls(defaults, True)
+		return True
+
+	def InstallControls(self, defaults, showAditionalEdit=False):
 		# 画面をスクロール可能にする
 		panel = wx.lib.scrolledpanel.ScrolledPanel(self.panel,wx.ID_ANY, size=(850,500))
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,None,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
@@ -107,7 +127,23 @@ class RequestEditDialog(BaseDialog):
 				self.headers[item.getName()] = form
 			else:
 				raise NotImplementedError()
-	
+
+		# 追加ヘッダ
+		self.aditionalHeaders = None
+		if showAditionalEdit:
+			self.aditionalHeaders = views.KeyValueSettingArea.KeyValueSettingArea(
+				"headers",
+				HeaderSettingDialog,
+				[
+					(_("フィールド名"), 0, 200),
+					(_("値の種類"), 0, 200),
+					(_("値"),0, 300)
+				],
+				{},
+				{},
+			)
+			self.aditionalHeaders.Initialize(self.wnd, creator, _("ヘッダ"))
+
 		# URIフィールド
 		self.uriFields = {}
 		for item in defaults["uriFields"]:
@@ -130,6 +166,25 @@ class RequestEditDialog(BaseDialog):
 			else:
 				raise NotImplementedError()
 
+		# 追加body
+		self.aditionalBody = None
+		if showAditionalEdit:
+			self.aditionalBodyFields = views.KeyValueSettingArea.KeyValueSettingArea(
+				"Body",
+				BodyFieldSettingDialog,
+				[
+					(_("名前"), 0, 200),
+					(_("値の種類"), 0, 200),
+					(_("値"),0, 300)
+				],
+				{},
+				{},
+			)
+			self.aditionalBodyFields.Initialize(self.wnd, creator, _("Body"))
+
+		self.memo,dummy = creator.inputbox(_("メモ"), None, defaults["memo"], wx.TE_MULTILINE|wx.BORDER_RAISED, 500, sizerFlag=wx.EXPAND|wx.ALL)
+		self.memo.hideScrollBar(wx.HORIZONTAL)
+
 		hCreator=views.ViewCreator.ViewCreator(self.viewMode,self.panel,self.sizer,wx.HORIZONTAL,20,style=wx.ALL|wx.ALIGN_RIGHT,margin=20)
 		okButton=hCreator.okbutton(_("OK"), self.processEnter)
 		cancelButton=hCreator.cancelbutton(_("キャンセル"))
@@ -142,7 +197,10 @@ class RequestEditDialog(BaseDialog):
 			errorDialog(error, self.wnd)
 			return
 
-		error = Endpoint.validateUri(self.uri.GetValue())
+		if self.baseUris:
+			error = Endpoint.validateUri(self.uri.GetValue())
+		else:
+			error = Request.validateUri(self.uri.GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return
@@ -196,14 +254,36 @@ class RequestEditDialog(BaseDialog):
 			uri = uri.replace("{"+k+"}", urllib.parse.quote(v))
 
 		headers = []
+		names = []
+		if self.aditionalHeaders:
+			values = self.aditionalHeaders.GetValue()
+			names = list(values[0].keys())
+			fieldTypes = list(values[0].values())
+			values = list(values[1].values())
+			for i in range(len(names)):
+				headers.append(Header.Header(names[i], HeaderFieldType[fieldTypes[i]], values[i]))
+
 		for k,v in self.headers.items():
+			if k in names:
+				continue
 			if type(v) == str:
 				headers.append(Header.Header(k, HeaderFieldType.CONST, v))
 			else:
 				headers.append(Header.Header(k, HeaderFieldType.CONST, v.GetValue()))
 
 		body = []
+		names = []
+		if self.aditionalBody:
+			values = self.aditionalBody.GetValue()
+			names = list(values[0].keys())
+			fieldTypes = list(values[0].values())
+			values = list(values[1].values())
+			for i in range(len(names)):
+				bodyFields.append(BodyField.BodyField(names[i], BodyFieldType[fieldTypes[i]], values[i]))
+
 		for k,v in self.body.items():
+			if k in names:
+				continue
 			if type(v) == str:
 				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
 			else:
@@ -215,6 +295,6 @@ class RequestEditDialog(BaseDialog):
 			Method(self.method.GetSelection()),
 			uri,
 			headers,
-			body
-		).toRequests()
-
+			body,
+			self.memo.GetValue()
+		)

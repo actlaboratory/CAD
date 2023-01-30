@@ -5,14 +5,8 @@
 
 import collections.abc
 import json
-import requests
 import sys
 import wx
-
-
-import constants
-import globalVars
-import menuItemsStore
 
 import constants
 import errorCodes
@@ -22,11 +16,13 @@ import menuItemsStore
 from chardet.universaldetector import UniversalDetector
 
 from .base import *
+from RequestSender import RequestSender
 from simpleDialog import *
 
 from views import globalKeyConfig
 from views import settingsDialog
 from views import versionDialog
+from views import RequestEditDialog
 from views import ServiceProviderDialog
 
 class MainView(BaseView):
@@ -144,6 +140,7 @@ class Menu(BaseMenu):
 		#ファイルメニュー
 		self.RegisterMenuCommand(self.hFileMenu,{
 			"FILE_SERVICE_PROVIDER" : events.serviceProvider,
+			"FILE_NEW_REQUEST" : events.newRequest,
 		})
 
 		self.RegisterMenuCommand(self.hOptionMenu,{
@@ -168,34 +165,17 @@ class Events(BaseEvents):
 		d = ServiceProviderDialog.Dialog()
 		d.Initialize()
 		if d.Show() == wx.ID_EXECUTE:
-			req = d.GetValue()
-			data = {
-				"RequestInfo": {
-					"method": req.method,
-					"url": req.url,
-					"headers":req.headers,
-				},
-				"RequestBody":None,
-				"ResponseInfo":{},
-				"ResponseBody":None,
-			}
-			try:
-				data["RequestBody"] = json.loads(req.body)
-			except:
-				data["RequestBody"] = str(req.body)
+			data = RequestSender.send(d.GetValue())
+			self.parent.data = data
+			self.parent.showData()
 
-			with requests.Session() as sess:
-				res = sess.send(req, allow_redirects=False)
-				data["ResponseInfo"]["status_code"] = res.status_code
-				data["ResponseInfo"]["reason"] = res.reason
-				data["ResponseInfo"]["elapsed"] = res.elapsed
-				data["ResponseInfo"]["headers"] = res.headers
-				try:
-					data["ResponseBody"] = res.json()
-				except:
-					data["ResponseBody"] = res.text
-				self.parent.data = data
-				self.parent.showData()
+	def newRequest(self, event):
+		d = RequestEditDialog.RequestEditDialog()
+		d.InitializeNewRequest(self.parent.hFrame)
+		if d.Show() == wx.ID_OK:
+			data = RequestSender.send(d.GetValue())
+			self.parent.data = data
+			self.parent.showData()
 
 	def option(self, event):
 		d = settingsDialog.Dialog()
