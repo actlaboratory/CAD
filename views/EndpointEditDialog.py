@@ -11,7 +11,9 @@ import views.ViewCreator
 from entities import BodyField, Endpoint, Header, UriField
 from enumClasses import BodyFieldType, ContentType, Method, UriFieldType
 from simpleDialog import errorDialog
+from views.BodyFieldSettingDialog import *
 from views.baseDialog import *
+from views.HeaderSettingDialog import *
 
 
 class EndpointEditDialog(BaseDialog):
@@ -102,7 +104,7 @@ class EndpointEditDialog(BaseDialog):
 
 		self.aditionalHeaders = views.KeyValueSettingArea.KeyValueSettingArea(
 			"aditionalHeaders",
-			AditionalHeaderSettingDialog,
+			HeaderSettingDialog,
 			[
 				(_("フィールド名"), 0, 200),
 				(_("値の種類"), 0, 200),
@@ -189,80 +191,6 @@ class EndpointEditDialog(BaseDialog):
 			self.memo.GetValue().strip()
 		)
 
-class AditionalHeaderSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
-	"""追加ヘッダの設定内容を入力するダイアログ"""
-
-	def __init__(self, parent, key="", headerType=_("固定値"), body=""):
-		super().__init__(
-			parent,
-			[
-				(_("フィールド名"), True),
-				(_("タイプ"), (_("固定値"), _("編集可能"))),
-				(_("値"), True),
-			],
-			[None]*3,
-			key,headerType,body
-		)
-
-	def Initialize(self):
-		return super().Initialize(_("ヘッダ設定"))
-
-	def Validation(self,event):
-		error = Header.validateName(self.edits[0].GetValue())
-		if error:
-			errorDialog(error, self.wnd)
-			return
-
-		error = Header.validateValue(HeaderFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
-		if error:
-			errorDialog(error, self.wnd)
-			return
-		event.Skip()
-
-	def GetData(self):
-		return [
-			self.edits[0].GetValue().strip(),
-			self.edits[1].GetStringSelection(),
-			self.edits[2].GetValue().strip()
-		]
-
-
-class BodyFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
-	"""Bodyの設定内容を入力するダイアログ"""
-
-	def __init__(self, parent, key="", headerType=_("固定値"), body=""):
-		super().__init__(
-			parent,
-			[
-				(_("フィールド名"), True),
-				(_("タイプ"), (_("固定値"), _("編集可能"))),
-				(_("値"), True),
-			],
-			[None]*3,
-			key,headerType,body
-		)
-
-	def Initialize(self):
-		return super().Initialize(_("ヘッダ設定"))
-
-	def Validation(self,event):
-		error = BodyField.validateName(self.edits[0].GetValue())
-		if error:
-			errorDialog(error, self.wnd)
-			return
-
-		error = BodyField.validateValue(BodyFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
-		if error:
-			errorDialog(error, self.wnd)
-			return
-		event.Skip()
-
-	def GetData(self):
-		return [
-			self.edits[0].GetValue().strip(),
-			self.edits[1].GetStringSelection(),
-			self.edits[2].GetValue().strip()
-		]
 
 class UriFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 	"""Uriフィールドの設定内容を入力するダイアログ"""
