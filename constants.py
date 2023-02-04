@@ -26,7 +26,7 @@ LOG_FILE_NAME="application.log"
 SETTING_FILE_NAME="settings.ini"
 KEYMAP_FILE_NAME="keymap.ini"
 SERVICE_PROVIDERS_FILE_NAME = "save_sp.dat"
-
+HISTORY_FILE_NAME = "save_history.dat"
 
 
 #フォントの設定可能サイズ範囲

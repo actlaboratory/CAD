@@ -56,38 +56,30 @@ class Request:
 	def getUri(self):
 		return self.uri
 
-	def toRequests(self):
-		headers = copy.deepcopy(self.headers)
-		data = None
-		if self.contentType == ContentType.JSON:
-			# case-insencitiveで比較して、Content-Typeがなければ追加
-			if "content-type" not in [v.getName().lower() for v in headers]:
-				headers.append(Header("Content-Type", HeaderFieldType.CONST, "application/json; charset=utf-8"))
-			if self.body:
-				data = {}
-				for i in self.body:
-					data[i.getName()] = i.getValue()
-				data = json.dumps(data)
-			else:
-				data=None
-		elif self.contentType == ContentType.FORM:
-			data = None
-			# case-insencitiveで比較して、Content-Typeがなければ追加
-			if "content-type" not in [v.getName().lower() for v in headers]:
-				headers.append(Header("Content-Type", HeaderFieldType.CONST, "application/x-www-form-urlencoded"))
-			if self.body:
-				data = {}
-				for i in self.body:
-					data[i.getName()] = i.getValue()
-		else:
-			raise notImplementedError
+	def toBodyDict(self):
+		data = {}
+		for i in self.body:
+			data[i.getName()] = i.getValue()
+		return data
 
+	def toHeaderDict(self):
 		headerDict = {}
-		for i in headers:
+		for i in self.headers:
 			headerDict[i.getName()] = i.getValue()
 
+		# case-insencitiveで比較して、Content-Typeがなければ追加
+		if "content-type" not in [v.getName().lower() for v in self.headers]:
+			headerDict["Content-Type"] = self.contentType.header_value
+		return headerDict
+
+
+	def toRequests(self):
+		data = self.toBodyDict()
+		if self.contentType == ContentType.JSON:
+			data = json.dumps(data)
+
 		req = requests.PreparedRequest()
-		req.prepare(self.method.name, self.uri, headerDict, data=data)
+		req.prepare(self.method.name, self.uri, self.toHeaderDict(), data=data)
 		return req
 
 	# --remote-nameオプション指定時に使用
