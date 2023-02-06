@@ -12,6 +12,8 @@ from .Header import Header
 from .BaseUri import BaseUri
 from .Endpoint import Endpoint
 
+from urllib3.util.url import parse_url
+
 URI_MIN_LENGTH = 10
 
 class Request:
@@ -132,4 +134,20 @@ def validateUri(uri):
 		return _("URIを%d文字以上で入力してください" % URI_MIN_LENGTH)
 	if not uri.startswith("https://") and not uri.startswith("http://"):
 		return _("URIはhttps://またはhttp://で始まる必要があります。")
+	try:
+		url = parse_url(uri)
+		if url.auth:
+			return _("認証情報はアドレスではなくAuthorizationヘッダで指定してください。")
+		elif not url.host:
+			return _("アドレスにホスト名が含まれていません。")
+		elif url.host.startswith(".") or url.host.startswith("*"):
+			return _("ホスト名が不正です。")
+	except:
+		import traceback
+		traceback.print_exc()
+		return _("アドレスが不正です。")
+	return ""
+
+
+
 	return ""
