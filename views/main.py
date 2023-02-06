@@ -23,6 +23,7 @@ from views import globalKeyConfig
 from views import settingsDialog
 from views import versionDialog
 from views import RequestEditDialog
+from views import RequestHistoryDialog
 from views import ServiceProviderDialog
 
 class MainView(BaseView):
@@ -94,7 +95,7 @@ class MainView(BaseView):
 			for i in range(len(self.data)):
 				self.setTreeData(root, '[{}]'.format(i), self.data[i])
 		else:
-			simpleDialog.errorDialog("Data type miss match", self.wnd)
+			errorDialog("Data type miss match", self.wnd)
 		self.visitor = TreeVisitor(self.tree, self.lst)
 		self.visitor.visit_node(root)
 
@@ -141,6 +142,7 @@ class Menu(BaseMenu):
 		self.RegisterMenuCommand(self.hFileMenu,{
 			"FILE_SERVICE_PROVIDER" : events.serviceProvider,
 			"FILE_NEW_REQUEST" : events.newRequest,
+			"FILE_REQUEST_HISTORY" : events.requestHistory,
 		})
 
 		self.RegisterMenuCommand(self.hOptionMenu,{
@@ -176,6 +178,16 @@ class Events(BaseEvents):
 			data = RequestSender.send(d.GetValue())
 			self.parent.data = data
 			self.parent.showData()
+
+	def requestHistory(self, event):
+		d = RequestHistoryDialog.RequestHistoryDialog()
+		d.Initialize()
+		result = d.Show()
+		if result== wx.ID_VIEW_DETAILS:
+			self.parent.data = d.GetValue()
+			self.parent.showData()
+		elif result == wx.ID_RETRY:
+			pass
 
 	def option(self, event):
 		d = settingsDialog.Dialog()

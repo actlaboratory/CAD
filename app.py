@@ -1,10 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
 #Application Main
 
+import wx
+
 import AppBase
 import update
+import constants
 import globalVars
 import proxyUtil
+import RequestHistory
 
 class Main(AppBase.MainBase):
 	def __init__(self):
@@ -18,10 +22,16 @@ class Main(AppBase.MainBase):
 		# アップデートを実行
 		if self.config.getboolean("general", "update"):
 			globalVars.update.update(True)
+
 		# メインビューを表示
 		from views import main
 		self.hMainView=main.MainView()
 		self.hMainView.Show()
+		wx.YieldIfNeeded()
+
+		# 履歴モジュール
+		globalVars.history = RequestHistory.RequestHistory(constants.HISTORY_FILE_NAME, self.config.getint("general", "histry_max", 0,100,100))
+
 		return True
 
 	def setProxyEnviron(self):

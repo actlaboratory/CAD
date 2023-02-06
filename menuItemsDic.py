@@ -10,7 +10,8 @@ def getValueString(ref_id):
 
 dic={
 	"FILE_SERVICE_PROVIDER":_("サービスプロバイダ一覧")+"...",
-	"FILE_NEW_REQUEST":_("新規リクエスト")+"...",
+	"FILE_NEW_REQUEST":_("新規リクエスト(&N)")+"...",
+	"FILE_REQUEST_HISTORY":_("履歴(&H)")+"...",
 
 	"OPTION_OPTION":_("オプション(&O)")+"...",
 	"OPTION_KEY_CONFIG":_("ショートカットキーの設定(&K)")+"...",

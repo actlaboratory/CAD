@@ -36,6 +36,13 @@ class ContentType(IntEnum):
 	JSON = 0
 	FORM = 1
 
+	@property
+	def header_value(self):
+		"""The Content-Type header value of the Enum member."""
+		if self._name_ == "JSON":
+			return "application/json; charset=utf-8"
+		else:
+			return "application/x-www-form-urlencoded"
 
 class HeaderFieldTypeEnumMeta(EnumMeta):
 	def __getitem__(self, value):
