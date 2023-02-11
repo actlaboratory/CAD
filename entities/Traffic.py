@@ -3,16 +3,19 @@
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 import copy
+import datetime
 
 from entities import Request,Response
 
 
 class Traffic:
-	def __init__(self, request,response):
+	def __init__(self, request,response, requested_at):
 		assert type(request) == Request.Request
 		assert type(response) == Response.Response
+		assert type(requested_at) == datetime.datetime
 		self.request = copy.deepcopy(request)
 		self.response = copy.deepcopy(response)
+		self.requested_at = requested_at
 
 	def getRequest(self):
 		return self.request
@@ -23,9 +26,10 @@ class Traffic:
 	def toTreeData(self):
 		return {
 			"RequestInfo": {
-				"headers": self.request.toHeaderDict(),
-				"method": self.request.getMethod().name,
 				"url": self.request.getUri(),
+				"method": self.request.getMethod().name,
+				"headers": self.request.toHeaderDict(),
+				"requested_at": self.requested_at.strftime('%Y-%m-%d %H:%M:%S'),
 			},
 			"RequestBody": self.request.toBodyDict(),
 			"ResponseInfo": {
@@ -39,7 +43,7 @@ class Traffic:
 
 	# リスト表示用項目
 	def GetListTuple(self):
-		return self.request.getName(), self.response.getStatusCode(), self.request.getMemo()
+		return self.request.getName(), self.response.getStatusCode(), self.request.getMemo(), self.requested_at
 
 	def __getitem__(self, index):
 		return self.GetListTuple()[index]
