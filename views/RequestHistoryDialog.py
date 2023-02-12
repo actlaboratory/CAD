@@ -2,6 +2,7 @@
 # リクエスト履歴ダイアログ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
+import pyperclip
 import wx
 
 import menuItemsStore
@@ -143,7 +144,7 @@ class RequestHistoryDialog(BaseDialog):
 			return
 		target = self.lst[index]
 
-		print(target.getRequest().toCurlCommand())
+		pyperclip.copy(target.getRequest().toCurlCommand())
 
 	def GetData(self):
 		if self.target:
