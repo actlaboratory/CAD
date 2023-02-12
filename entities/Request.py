@@ -5,6 +5,9 @@
 import copy
 import json
 import requests
+import urllib.parse
+
+import CmdLineUtil
 
 from enumClasses import ContentType, HeaderFieldType, Method
 from .BodyField import BodyField
@@ -14,10 +17,10 @@ from .Endpoint import Endpoint
 
 from urllib3.util.url import parse_url
 
+
 URI_MIN_LENGTH = 10
 
 class Request:
-
 	def __init__(self, name, contentType, method, uri, headers=[], body=[], memo=""):
 		if (validateName(name) or
 			type(contentType) != ContentType or
@@ -63,6 +66,29 @@ class Request:
 		for i in self.body:
 			data[i.getName()] = i.getValue()
 		return data
+
+	def toCurlCommand(self):
+		result = ["curl"]
+
+		for k,v in self.toHeaderDict().items():
+			result.append("-H")
+			result.append(k+": "+v)
+
+		if self.method != Method.GET:
+			result.append("-X")
+			result.append(self.method.name)
+
+		if self.body:
+			result.append("-d")
+			if self.contentType == ContentType.JSON:
+				result.append(json.dumps(self.toBodyDict()))
+			elif self.contentType == ContentType.FORM:
+				result.append(urllib.parse.urlencode(self.toBodyDict()))
+			else:
+				raise NotImplementedError
+		result.append(self.uri)
+
+		return CmdLineUtil.list2Windowscmdline(result)
 
 	def toHeaderDict(self):
 		headerDict = {}
@@ -147,7 +173,5 @@ def validateUri(uri):
 		traceback.print_exc()
 		return _("アドレスが不正です。")
 	return ""
-
-
 
 	return ""

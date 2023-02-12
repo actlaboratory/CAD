@@ -9,6 +9,7 @@ import menuItemsStore
 import simpleDialog
 import views.ViewCreator
 
+from views.base import BaseMenu
 from views.baseDialog import *
 
 
@@ -24,6 +25,7 @@ class RequestHistoryDialog(BaseDialog):
 			parent = self.app.hMainView.hFrame
 		super().Initialize(parent,_("リクエスト履歴一覧"))
 		self.InstallControls()
+		self.createPopupMenu()
 		return True
 
 	def InstallControls(self):
@@ -37,6 +39,8 @@ class RequestHistoryDialog(BaseDialog):
 		self.list.Bind(wx.EVT_LIST_ITEM_ACTIVATED,self.onActivate)
 		self.list.Bind(wx.EVT_LIST_ITEM_SELECTED,self.ItemSelected)
 		self.list.Bind(wx.EVT_LIST_ITEM_DESELECTED,self.ItemSelected)
+		self.list.Bind(wx.EVT_CONTEXT_MENU, self.onContextMenu)
+
 
 		creator=views.ViewCreator.ViewCreator(self.viewMode,self.panel,self.sizer,wx.HORIZONTAL,20,style=wx.ALIGN_RIGHT)
 		self.reuseButton = creator.button(_("再利用(&R)"), self.reuse)
@@ -49,12 +53,20 @@ class RequestHistoryDialog(BaseDialog):
 		self.ItemSelected()
 
 		keymap = self.app.hMainView.menu.keymap
-		keymap.Set(self.identifier,self.wnd,self.onKey)
+		keymap.Set(self.identifier,self.list,self.onCommand)
 
 	def ItemSelected(self,event=None):
 		self.reuseButton.Enable(self.list.GetFocusedItem()>=0)
 		self.editButton.Enable(self.list.GetFocusedItem()>=0)
 		self.deleteButton.Enable(self.list.GetFocusedItem()>=0)
+
+	def createPopupMenu(self):
+		self.menu = BaseMenu(self.identifier)
+
+		self.popupMenu = wx.Menu()
+		self.menu.RegisterMenuCommand(self.popupMenu,{
+			"HISTORY_COPY_CURL_COMMAND": self.copyCurlCommand,
+		})
 
 	def activate(self, target):
 		index = self.list.GetFocusedItem()
@@ -100,8 +112,13 @@ class RequestHistoryDialog(BaseDialog):
 			return
 		self.activate(self.lst[index])
 
-	def onKey(self, event):
+	def onCommand(self, event):
 		selected=event.GetId()#メニュー識別しの数値
+		callback = self.menu.getCallback(selected)
+		if callback:
+			callback(event)
+			return
+
 		index = self.list.GetFocusedItem()
 		if selected==menuItemsStore.getRef("REUSE"):
 			self.add()
@@ -113,6 +130,20 @@ class RequestHistoryDialog(BaseDialog):
 		elif selected==menuItemsStore.getRef("EDIT"):
 			return self.edit()
 		event.Skip()
+
+	def onContextMenu(self,event):
+		if self.list.GetFocusedItem() < 0:
+			return
+		self.list.PopupMenu(self.popupMenu,event)
+
+
+	def copyCurlCommand(self,event):
+		index = self.list.GetFocusedItem()
+		if index < 0:
+			return
+		target = self.lst[index]
+
+		print(target.getRequest().toCurlCommand())
 
 	def GetData(self):
 		if self.target:

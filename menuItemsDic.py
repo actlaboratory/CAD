@@ -18,4 +18,7 @@ dic={
 
 	"HELP_UPDATE":_("最新バージョンを確認(&U)")+"...",
 	"HELP_VERSIONINFO":_("バージョン情報(&V)")+"...",
+
+	# Request History Dialog
+	"HISTORY_COPY_CURL_COMMAND":_("curlコマンドとしてコピー(&C)"),
 }
