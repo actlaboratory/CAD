@@ -75,7 +75,7 @@ class MainView(BaseView):
 
 			# 標準入力から
 			input = sys.stdin.read()
-			if not self.input:
+			if not input:
 				return
 			try:
 				self.data = json.loads(input,strict=False)
