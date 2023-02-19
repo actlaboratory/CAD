@@ -20,5 +20,9 @@ dic={
 	"HELP_VERSIONINFO":_("バージョン情報(&V)")+"...",
 
 	# Request History Dialog
+	"HISTORY_VIEW":_("表示(&V)"),
+	"HISTORY_REUSE":_("再利用(&R)"),
+	"HISTORY_EDIT":_("編集して再利用(&E)"),
+	"HISTORY_DELETE":_("削除(&D)"),
 	"HISTORY_COPY_CURL_COMMAND":_("curlコマンドとしてコピー(&C)"),
 }

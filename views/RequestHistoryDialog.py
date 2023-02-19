@@ -6,7 +6,7 @@ import pyperclip
 import wx
 
 import menuItemsStore
-
+import RequestSender
 import simpleDialog
 import views.ViewCreator
 
@@ -67,6 +67,11 @@ class RequestHistoryDialog(BaseDialog):
 		self.popupMenu = wx.Menu()
 		self.menu.RegisterMenuCommand(self.popupMenu,{
 			"HISTORY_COPY_CURL_COMMAND": self.copyCurlCommand,
+			"HISTORY_VIEW": self.onActivate,
+			"HISTORY_REUSE": self.reuse,
+			"HISTORY_EDIT": self.edit,
+			"HISTORY_DELETE": self.delete,
+
 		})
 
 	def activate(self, target):
@@ -74,7 +79,7 @@ class RequestHistoryDialog(BaseDialog):
 		if index < 0:
 			return
 		target = self.lst[index]
-		self.target = target
+		self.target = target.toTreeData()
 		self.wnd.EndModal(wx.ID_VIEW_DETAILS)
 
 	def reuse(self, event=None):
@@ -82,7 +87,8 @@ class RequestHistoryDialog(BaseDialog):
 		if index < 0:
 			return
 		target = self.lst[index]
-		return
+		self.target = RequestSender.RequestSender.send(target.getRequest())
+		self.wnd.EndModal(wx.ID_VIEW_DETAILS)
 
 	def edit(self, event=None):
 		index = self.list.GetFocusedItem()
@@ -148,6 +154,6 @@ class RequestHistoryDialog(BaseDialog):
 
 	def GetData(self):
 		if self.target:
-			return self.target.toTreeData()
+			return self.target
 		else:
 			return None
