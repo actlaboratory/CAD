@@ -1,14 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
 #Application Main
 
+import sys
 import wx
 
 import AppBase
-import update
+import commandParser
 import constants
 import globalVars
 import proxyUtil
 import RequestHistory
+import update
+
+from RequestSender import RequestSender
+
 
 class Main(AppBase.MainBase):
 	def __init__(self):
@@ -32,6 +37,11 @@ class Main(AppBase.MainBase):
 		# 履歴モジュール
 		globalVars.history = RequestHistory.RequestHistory(constants.HISTORY_FILE_NAME, self.config.getint("general", "histry_max", 0,100,100))
 
+		# コマンドのパース
+		if len(sys.argv) >= 2:
+			parser = commandParser.CommandParser()
+			self.hMainView.showData(RequestSender.send(parser.parse_args()))
+			# エラーになったらここにはこないで終了されてしまう			
 		return True
 
 	def setProxyEnviron(self):

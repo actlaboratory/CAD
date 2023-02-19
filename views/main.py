@@ -62,12 +62,15 @@ class MainView(BaseView):
 		self.data={}
 		if len(argv) == 2:
 			# 指定されたファイルから
-			with open(argv[1], 'rb') as fp:
-				try:
-					self.data = json.load(fp,strict=False)
-				except json.decoder.JSONDecodeError as ex:
-					fp.seek(0)
-					self.data["file"] = fp.read().decode(encoding=self.getTextEncoding(fp),errors="replace")
+			try:
+				with open(argv[1], 'rb') as fp:
+					try:
+						self.showData(json.load(fp,strict=False))
+					except json.decoder.JSONDecodeError as ex:
+						fp.seek(0)
+						self.showData({"file":fp.read().decode(encoding=self.getTextEncoding(fp),errors="replace")})
+			except OSError:
+				pass
 		else:
 			# 標準入力に何もない
 			if sys.stdin.isatty():
@@ -78,13 +81,12 @@ class MainView(BaseView):
 			if not input:
 				return
 			try:
-				self.data = json.loads(input,strict=False)
+				self.showData(json.loads(input,strict=False))
 			except json.decoder.JSONDecodeError as ex:
-				self.data["input"] = input
-		self.showData()
+				self.showData({"input":input})
 
-	# self.dataに入れたものを表示する
-	def showData(self):
+	def showData(self, data):
+		self.data = data
 		self.tree.DeleteAllItems()
 		root = self.tree.AddRoot('Root')
 		self.tree.SetItemData(root, self.data)
@@ -167,25 +169,20 @@ class Events(BaseEvents):
 		d = ServiceProviderDialog.Dialog()
 		d.Initialize()
 		if d.Show() == wx.ID_EXECUTE:
-			data = RequestSender.send(d.GetValue())
-			self.parent.data = data
-			self.parent.showData()
+			self.parent.showData(RequestSender.send(d.GetValue()))
 
 	def newRequest(self, event):
 		d = RequestEditDialog.RequestEditDialog()
 		d.InitializeNewRequest(self.parent.hFrame)
 		if d.Show() == wx.ID_OK:
-			data = RequestSender.send(d.GetValue())
-			self.parent.data = data
-			self.parent.showData()
+			self.parent.showData(RequestSender.send(d.GetValue()))
 
 	def requestHistory(self, event):
 		d = RequestHistoryDialog.RequestHistoryDialog()
 		d.Initialize()
 		result = d.Show()
 		if result== wx.ID_VIEW_DETAILS:
-			self.parent.data = d.GetValue()
-			self.parent.showData()
+			self.parent.showData(d.GetValue())
 		elif result == wx.ID_RETRY:
 			pass
 
