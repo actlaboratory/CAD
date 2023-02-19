@@ -10,6 +10,8 @@ class BodyFieldTypeEnumMeta(EnumMeta):
 			return super().__getitem__("CONST")
 		elif value == _("編集可能"):
 			return super().__getitem__("EDITABLE")
+		if value == _("エンコード済み固定値"):
+			return super().__getitem__("ENCORDED")
 		else:
 			return super().__getitem__(value)
 
@@ -18,6 +20,7 @@ class BodyFieldType(IntEnum, metaclass=BodyFieldTypeEnumMeta):
 	CONST = 0
 	EDITABLE = 1
 	SELECT = 2
+	ENCORDED = 3
 
 	@property
 	def view_name(self):
@@ -28,6 +31,8 @@ class BodyFieldType(IntEnum, metaclass=BodyFieldTypeEnumMeta):
 			return _("編集可能")
 		elif self._name_ == "SELECT":
 			return _("選択")
+		elif self._name_ == "ENCORDED":
+			return _("エンコード済固定値")
 		else:
 			raise ValueError(self._name_)
 

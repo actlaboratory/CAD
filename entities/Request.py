@@ -9,7 +9,7 @@ import urllib.parse
 
 import CmdLineUtil
 
-from enumClasses import ContentType, HeaderFieldType, Method
+from enumClasses import BodyFieldType, ContentType, HeaderFieldType, Method
 from .BodyField import BodyField
 from .Header import Header
 from .BaseUri import BaseUri
@@ -67,6 +67,25 @@ class Request:
 			data[i.getName()] = i.getValue()
 		return data
 
+	def toBodyString(self):
+		if self.contentType == ContentType.JSON:
+			data = {}
+			for i in self.body:
+				data[i.getName()] = i.getValue()
+			return json.dumps(data)
+		elif self.contentType == ContentType.FORM:
+			result = ""
+			for i in self.body:
+				if result:
+					result += "&"
+				if i.getFieldType() == BodyFieldType.ENCORDED:
+					result += i.getName() + "=" + i.getValue()
+				else:
+					result += urllib.parse.quote(i.getName()) + "=" + urllib.parse.quote(i.getValue())
+			return result
+		else:
+			raise NotImplementedError
+
 	def toCurlCommand(self):
 		result = ["curl"]
 
@@ -74,18 +93,13 @@ class Request:
 			result.append("-H")
 			result.append(k+": "+v)
 
-		if self.method != Method.GET:
-			result.append("-X")
-			result.append(self.method.name)
+		result.append("-X")
+		result.append(self.method.name)
 
 		if self.body:
 			result.append("-d")
-			if self.contentType == ContentType.JSON:
-				result.append(json.dumps(self.toBodyDict()))
-			elif self.contentType == ContentType.FORM:
-				result.append(urllib.parse.urlencode(self.toBodyDict()))
-			else:
-				raise NotImplementedError
+			result.append(self.toBodyString())
+
 		result.append(self.uri)
 
 		return CmdLineUtil.list2Windowscmdline(result)
@@ -96,18 +110,14 @@ class Request:
 			headerDict[i.getName()] = i.getValue()
 
 		# case-insencitiveで比較して、Content-Typeがなければ追加
-		if "content-type" not in [v.getName().lower() for v in self.headers]:
+		if self.body and "content-type" not in [v.getName().lower() for v in self.headers]:
 			headerDict["Content-Type"] = self.contentType.header_value
 		return headerDict
 
 
 	def toRequests(self):
-		data = self.toBodyDict()
-		if self.contentType == ContentType.JSON:
-			data = json.dumps(data)
-
 		req = requests.PreparedRequest()
-		req.prepare(self.method.name, self.uri, self.toHeaderDict(), data=data)
+		req.prepare(self.method.name, self.uri, self.toHeaderDict(), data=self.toBodyString())
 		return req
 
 	# --remote-nameオプション指定時に使用
