@@ -32,8 +32,6 @@ def validateName(name):
 def validateValue(fieldType, value):
 	assert isinstance(value, str)
 	value = value.strip()
-	if fieldType != BodyFieldType.EDITABLE and not len(value):
-		return _("値を入力してください");
 	return ""
 
 def validateFieldType(fieldType):
