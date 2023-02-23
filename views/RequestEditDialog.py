@@ -169,7 +169,7 @@ class RequestEditDialog(BaseDialog):
 				raise NotImplementedError()
 
 		# 追加body
-		self.aditionalBody = None
+		self.aditionalBodyFields=None
 		if showAditionalEdit:
 			self.aditionalBodyFields = views.KeyValueSettingArea.KeyValueSettingArea(
 				"Body",
@@ -277,15 +277,18 @@ class RequestEditDialog(BaseDialog):
 
 		body = []
 		names = []
-		if self.aditionalBody:
-			values = self.aditionalBody.GetValue()
+		print(self.aditionalBodyFields)
+		if self.aditionalBodyFields:
+			values = self.aditionalBodyFields.GetValue()
+			print(values)
 			names = list(values[0].keys())
+			print(names)
 			fieldTypes = list(values[0].values())
 			valueTypes = list(values[1].values())
 			values = list(values[2].values())
 			for i in range(len(names)):
 				body.append(BodyField.generateFromString(names[i], fieldTypes[i], valueTypes[i], values[i]))
-
+			print(body)
 		for k,v in self.body.items():
 			if k in names:
 				continue
@@ -293,7 +296,7 @@ class RequestEditDialog(BaseDialog):
 				body.append(BodyField.generateFromString(k, "CONST", self.bodyValueType[k], v.GetValue()))
 			else:
 				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
-
+		print(body)
 		return Request.Request(
 			self.name.GetValue(),
 			ContentType(self.contentType.GetSelection()),
