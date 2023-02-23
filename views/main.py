@@ -45,6 +45,9 @@ class MainView(BaseView):
 
 		creator=views.ViewCreator.ViewCreator(self.viewMode,self.hPanel,self.creator.GetSizer(), wx.HORIZONTAL,style=wx.ALL|wx.EXPAND,proportion=1,space=0)
 		self.tree,dummy = creator.treeCtrl("tree",self.events.OnTreeSelChanged,sizerFlag=wx.EXPAND,proportion=1,textLayout=None)
+		self.tree.SetMaxSize((500,-1))
+		self.tree.Bind(wx.EVT_TREE_KEY_DOWN, self.events.OnTreeKeyDown)
+
 		root = self.tree.AddRoot('Root')
 
 		self.lst,dummy = creator.virtualListCtrl("values",sizerFlag=wx.EXPAND,proportion=1,textLayout=None)
@@ -55,7 +58,6 @@ class MainView(BaseView):
 
 		self.lst.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.events.OnListItemActivated, )
 		self.lst.Bind(wx.EVT_LIST_KEY_DOWN, self.events.OnListKeyDown)
-		self.tree.Bind(wx.EVT_TREE_KEY_DOWN, self.events.OnTreeKeyDown)
 
 		self.visitor = None
 		self.load()
