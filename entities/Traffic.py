@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# ƒgƒ‰ƒtƒBƒbƒN(ƒŠƒNƒGƒXƒg+ƒŒƒXƒ|ƒ“ƒX)ƒGƒ“ƒeƒBƒeƒB
+# ãƒˆãƒ©ãƒ•ã‚£ãƒƒã‚¯(ãƒªã‚¯ã‚¨ã‚¹ãƒˆ+ãƒ¬ã‚¹ãƒãƒ³ã‚¹)ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 import copy
@@ -41,7 +41,7 @@ class Traffic:
 			"ResponseBody": self.response.getBody(),
 		}
 
-	# ƒŠƒXƒg•\¦—p€–Ú
+	# ãƒªã‚¹ãƒˆè¡¨ç¤ºç”¨é …ç›®
 	def GetListTuple(self):
 		return self.request.getName(), self.response.getStatusCode(), self.request.getMemo(), self.requested_at
 
