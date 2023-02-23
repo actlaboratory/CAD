@@ -38,7 +38,7 @@ class Main(AppBase.MainBase):
 		globalVars.history = RequestHistory.RequestHistory(constants.HISTORY_FILE_NAME, self.config.getint("general", "histry_max", 0,100,100))
 
 		# コマンドのパース
-		if len(sys.argv) >= 2:
+		if not self.hMainView.isLoaded() and len(sys.argv) >= 2:
 			parser = commandParser.CommandParser()
 			self.hMainView.showData(RequestSender.send(parser.parse_args()))
 			# エラーになったらここにはこないで終了されてしまう			

@@ -60,6 +60,7 @@ class MainView(BaseView):
 		self.lst.Bind(wx.EVT_LIST_KEY_DOWN, self.events.OnListKeyDown)
 
 		self.visitor = None
+		self.loaded = False
 		self.load()
 		self.tree.ExpandAll()
 
@@ -75,6 +76,7 @@ class MainView(BaseView):
 					except json.decoder.JSONDecodeError as ex:
 						fp.seek(0)
 						self.showData({"file":fp.read().decode(encoding=self.getTextEncoding(fp),errors="replace")})
+				self.loaded = True
 			except OSError:
 				pass
 		else:
@@ -88,8 +90,12 @@ class MainView(BaseView):
 				return
 			try:
 				self.showData(json.loads(input,strict=False))
+				self.loaded = True
 			except json.decoder.JSONDecodeError as ex:
 				self.showData({"input":input})
+
+	def isLoaded(self):
+		return self.loaded
 
 	def showData(self, data):
 		self.data = data
