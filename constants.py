@@ -7,10 +7,10 @@ import wx
 
 #アプリケーション基本情報
 APP_FULL_NAME = "Curl based API Debugger"#アプリケーションの完全な名前
-APP_NAME="cad"#アプリケーションの名前
+APP_NAME="CAD"#アプリケーションの名前
 APP_ICON = None
-APP_VERSION="1.1.0"
-APP_LAST_RELEASE_DATE="20xx-xx-xx"
+APP_VERSION="0.1.0"
+APP_LAST_RELEASE_DATE="2023-02-23"
 APP_COPYRIGHT_YEAR="2023"
 APP_LICENSE="Apache License 2.0"
 APP_DEVELOPERS="yamahubuki,ACT Laboratory"
@@ -22,7 +22,7 @@ SUPPORTING_LANGUAGE={"ja-JP": "日本語","en-US": "English"}
 
 #各種ファイル名
 LOG_PREFIX="cad"
-LOG_FILE_NAME="application.log"
+LOG_FILE_NAME="cad.log"
 SETTING_FILE_NAME="settings.ini"
 KEYMAP_FILE_NAME="keymap.ini"
 SERVICE_PROVIDERS_FILE_NAME = "save_sp.dat"
