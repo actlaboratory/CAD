@@ -30,8 +30,7 @@ def validateName(name):
 	return ""
 
 def validateValue(fieldType, value):
-	assert isinstance(value, str)
-	value = value.strip()
+	assert isinstance(value, (str,int, float, bool, type(None)))
 	return ""
 
 def validateFieldType(fieldType):

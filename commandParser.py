@@ -3,6 +3,7 @@
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
 import argparse
+import json
 import re
 
 import constants
@@ -88,44 +89,32 @@ class CommandParser:
 		args =  self.parser.parse_args()
 
 		# ヘッダ
-		headers = parse_headers(args.header)
+		headers = parseHeaders(args.header)
 
 		# メソッド
 		if args.request:
 			method=Method[args.request]
 		else:	# 他のコマンドから推測
-			# -d などがあればPOST
-			if args.request.data:
-				method = Method.POST
 			# 何もなければGET
 			method = Method.GET
+			# -d などがあればPOST
+			if args.data:
+				method = Method.POST
 
 		# ContentType
 		# 基本はFORM
 		contentType=ContentType.FORM
 		# ヘッダでJSON指定していればJSONにする
 		for item in headers:
-			name = item.getName().lower
-			if name == "content-type" and name.startswith("application/json"):
+			if item.getName().lower() == "content-type" and item.getValue().lower().startswith("application/json"):
 				contentType=ContentType.JSON
 
 		# body
-		body = []
-		if args.data and contentType == ContentType.FORM:
-			for arg in args.data.split("&"):
-				if not arg:
-					continue
-				nv = arg.split('=', 1)
-				if len(nv) != 2:
-					nv.append("")
-			body.append(BodyField.BodyField(nv[0], BodyFieldType.ENCORDED, nv[1]))
-		elif args.data and contentType == ContentType.JSON:
-			raise NotImplementedError
+		body = parseBody(args.data, contentType)
 
-		print(args)
 		return Request.Request("commandline request", contentType, method, args.URLs, headers, body)
 
-def parse_headers(headers):
+def parseHeaders(headers):
 	pattern = re.compile(r'^[\041-\071\073-\176]*:')	# 072=0x3A=:はダメ
 	result = []
 	for item in headers:
@@ -144,3 +133,30 @@ def parse_headers(headers):
 		else:
 			result.append(Header.Header(item[:i], HeaderFieldType.REMOVE, ""))
 	return result
+
+
+
+def parseBody(data, contentType):
+	body = []
+
+	# 何も考えずにJSONパース
+	try:
+		items = json.loads(data)
+		for k,v in items.items():
+			if type(k) != str or type(v) not in (bool,float,int, type(None), str):
+				raise ValueError(_("現在、JSONリクエストでのリストや辞書の利用はサポートしていません。"))
+			body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
+		return body
+	except:
+		if contentType == ContentType.JSON:
+			raise ValueError(_("JSONデータのパースに失敗しました。"))
+
+	if args.data and contentType == ContentType.FORM:
+		for arg in args.data.split("&"):
+			if not arg:
+				continue
+			nv = arg.split('=', 1)
+			if len(nv) != 2:
+				nv.append("")
+		body.append(BodyField.BodyField(nv[0], BodyFieldType.ENCORDED, nv[1]))
+	return body
