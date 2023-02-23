@@ -5,6 +5,7 @@
 
 import collections.abc
 import json
+import pyperclip
 import sys
 import wx
 
@@ -44,7 +45,9 @@ class MainView(BaseView):
 
 		creator=views.ViewCreator.ViewCreator(self.viewMode,self.hPanel,self.creator.GetSizer(), wx.HORIZONTAL,style=wx.ALL|wx.EXPAND,proportion=1,space=0)
 		self.tree,dummy = creator.treeCtrl("tree",self.events.OnTreeSelChanged,sizerFlag=wx.EXPAND,proportion=1,textLayout=None)
-		self.lst,dummy = creator.listCtrl("values",sizerFlag=wx.EXPAND,proportion=1,textLayout=None)
+		root = self.tree.AddRoot('Root')
+
+		self.lst,dummy = creator.virtualListCtrl("values",sizerFlag=wx.EXPAND,proportion=1,textLayout=None)
 
 		self.lst.AppendColumn("Key", format=wx.LIST_FORMAT_LEFT, width=150)
 		self.lst.AppendColumn("Value", format=wx.LIST_FORMAT_LEFT, width=150)
@@ -54,6 +57,7 @@ class MainView(BaseView):
 		self.lst.Bind(wx.EVT_LIST_KEY_DOWN, self.events.OnListKeyDown)
 		self.tree.Bind(wx.EVT_TREE_KEY_DOWN, self.events.OnTreeKeyDown)
 
+		self.visitor = None
 		self.load()
 		self.tree.ExpandAll()
 
@@ -137,6 +141,7 @@ class Menu(BaseMenu):
 
 		#メニューの大項目を作る
 		self.hFileMenu=wx.Menu()
+		self.hEditMenu=wx.Menu()
 		self.hOptionMenu=wx.Menu()
 		self.hHelpMenu=wx.Menu()
 
@@ -145,6 +150,11 @@ class Menu(BaseMenu):
 			"FILE_SERVICE_PROVIDER" : events.serviceProvider,
 			"FILE_NEW_REQUEST" : events.newRequest,
 			"FILE_REQUEST_HISTORY" : events.requestHistory,
+		})
+
+		# 編集メニュー
+		self.RegisterMenuCommand(self.hEditMenu,{
+			"EDIT_COPY": events.copy,
 		})
 
 		self.RegisterMenuCommand(self.hOptionMenu,{
@@ -185,6 +195,17 @@ class Events(BaseEvents):
 			self.parent.showData(d.GetValue())
 		elif result == wx.ID_RETRY:
 			pass
+
+	def copy(self, event):
+		if self.parent.tree.HasFocus():
+			target = self.parent.tree.GetItemText(self.parent.tree.GetFocusedItem())
+		elif self.parent.lst.HasFocus():
+			target = self.parent.lst.GetItemText(self.parent.lst.GetFocusedItem(), 1)
+		else:
+			# 処理できないのでとりあえず上に投げておく
+			event.Skip()
+			return
+		pyperclip.copy(target)
 
 	def option(self, event):
 		d = settingsDialog.Dialog()
@@ -247,13 +268,18 @@ class Events(BaseEvents):
 
 	def OnTreeSelChanged(self,event):
 		item = event.GetItem()
-		self.parent.visitor.visit_node(item)
+		if self.parent.visitor:
+			self.parent.visitor.visit_node(item)
 
 	def OnListItemActivated(self,event):
 		item = event.GetItem()
-		self.parent.visitor.visit_item(item)
+		if self.parent.visitor:
+			self.parent.visitor.visit_item(item)
 
 	def OnListKeyDown(self,event):
+		if not self.parent.visitor:
+			event.Skip()
+			return
 		keycode = event.GetKeyCode()
 		if keycode == wx.WXK_BACK:
 			self.parent.visitor.visit_parent()
@@ -261,6 +287,9 @@ class Events(BaseEvents):
 			event.Skip()
 
 	def OnTreeKeyDown(self,event):
+		if not self.parent.visitor:
+			event.Skip()
+			return
 		keycode = event.GetKeyCode()
 		if keycode == ord('.'):
 			self.parent.visitor.visit_first_child()
