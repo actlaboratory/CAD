@@ -79,7 +79,7 @@ class MainView(BaseView):
 				pass
 		else:
 			# 標準入力に何もない
-			if sys.stdin.isatty():
+			if not sys.stdin or sys.stdin.isatty():
 				return
 
 			# 標準入力から
