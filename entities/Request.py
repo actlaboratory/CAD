@@ -64,7 +64,10 @@ class Request:
 	def toBodyDict(self):
 		data = {}
 		for i in self.body:
-			data[i.getName()] = i.getValue()
+			if self.contentType == ContentType.JSON:
+				data[i.getName()] = i.getValue()
+			else:
+				data[i.getName()] = i.getStringValue()
 		return data
 
 	def toBodyString(self):
@@ -79,9 +82,9 @@ class Request:
 				if result:
 					result += "&"
 				if i.getFieldType() == BodyFieldType.ENCORDED:
-					result += i.getName() + "=" + i.getValue()
+					result += i.getName() + "=" + i.getStringValue()
 				else:
-					result += urllib.parse.quote(i.getName()) + "=" + urllib.parse.quote(i.getValue())
+					result += urllib.parse.quote(i.getName()) + "=" + urllib.parse.quote(i.getStringValue())
 			return result
 		else:
 			raise NotImplementedError

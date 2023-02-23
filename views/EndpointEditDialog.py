@@ -73,9 +73,11 @@ class EndpointEditDialog(BaseDialog):
 		creator=views.ViewCreator.ViewCreator(self.viewMode,panel,sizer,wx.VERTICAL,20,style=wx.ALL|wx.EXPAND,margin=20)
 		tmp1 = {}
 		tmp2 = {}
+		tmp3 = {}
 		for i in self.endpoint.getBody():
 			tmp1[i.getName()] = i.getFieldType().view_name
-			tmp2[i.getName()] = i.getValue()
+			tmp2[i.getName()] = i.getValueTypeString()
+			tmp3[i.getName()] = i.getStringValue()
 
 		self.bodyFields = views.KeyValueSettingArea.KeyValueSettingArea(
 			"Body",
@@ -83,10 +85,12 @@ class EndpointEditDialog(BaseDialog):
 			[
 				(_("名前"), 0, 200),
 				(_("値の種類"), 0, 200),
+				(_("型"), 0, 130),
 				(_("値"),0, 300)
 			],
 			tmp1,
 			tmp2,
+			tmp3
 		)
 		self.bodyFields.Initialize(self.wnd, creator, _("Body"))
 
@@ -167,9 +171,10 @@ class EndpointEditDialog(BaseDialog):
 		values = self.bodyFields.GetValue()
 		names = list(values[0].keys())
 		fieldTypes = list(values[0].values())
-		values = list(values[1].values())
+		valueTypes = list(values[1].values())
+		values = list(values[2].values())
 		for i in range(len(names)):
-			bodyFields.append(BodyField.BodyField(names[i], BodyFieldType[fieldTypes[i]], values[i]))
+			bodyFields.append(BodyField.generateFromString(names[i], fieldTypes[i], valueTypes[i], values[i]))
 
 		headers = []
 		values = self.aditionalHeaders.GetValue()

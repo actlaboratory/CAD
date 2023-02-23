@@ -156,13 +156,15 @@ class RequestEditDialog(BaseDialog):
 
 		# body
 		self.body = {}
+		self.bodyValueType = {}
 		for item in defaults["body"]:
 			if item.getFieldType() == BodyFieldType.CONST:
 				self.body[item.getName()] = item.getValue()
 			elif item.getFieldType() == BodyFieldType.EDITABLE:
-				form,dummy = grid.inputbox(item.getName(), None, item.getValue(), wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
+				form,dummy = grid.inputbox(item.getName(), None, item.getStringValue(), wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 				form.hideScrollBar(wx.HORIZONTAL)
 				self.body[item.getName()] = form
+				self.bodyValueType[item.getName()] = item.getValueTypeString()
 			else:
 				raise NotImplementedError()
 
@@ -175,8 +177,10 @@ class RequestEditDialog(BaseDialog):
 				[
 					(_("名前"), 0, 200),
 					(_("値の種類"), 0, 200),
+					(_("型"), 0, 130),
 					(_("値"),0, 300)
 				],
+				{},
 				{},
 				{},
 			)
@@ -220,8 +224,8 @@ class RequestEditDialog(BaseDialog):
 					return
 
 		for k,v in self.body.items():
-			if type(v) != str:
-				error = BodyField.validateValue(BodyFieldType.CONST, v.GetValue())
+			if isinstance(v, wx.Window):
+				error = BodyField.validateValueString(BodyFieldType.CONST, self.bodyValueType[k], v.GetValue())
 				if error:
 					errorDialog(error, self.wnd)
 					return
@@ -277,17 +281,18 @@ class RequestEditDialog(BaseDialog):
 			values = self.aditionalBody.GetValue()
 			names = list(values[0].keys())
 			fieldTypes = list(values[0].values())
-			values = list(values[1].values())
+			valueTypes = list(values[1].values())
+			values = list(values[2].values())
 			for i in range(len(names)):
-				bodyFields.append(BodyField.BodyField(names[i], BodyFieldType[fieldTypes[i]], values[i]))
+				body.append(BodyField.generateFromString(names[i], fieldTypes[i], valueTypes[i], values[i]))
 
 		for k,v in self.body.items():
 			if k in names:
 				continue
-			if type(v) == str:
-				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
+			if isinstance(v, wx.Window):
+				body.append(BodyField.generateFromString(k, "CONST", self.bodyValueType[k], v.GetValue()))
 			else:
-				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v.GetValue()))
+				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
 
 		return Request.Request(
 			self.name.GetValue(),

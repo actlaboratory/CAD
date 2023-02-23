@@ -14,20 +14,26 @@ from simpleDialog import errorDialog
 class BodyFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 	"""Bodyの設定内容を入力するダイアログ"""
 
-	def __init__(self, parent, key="", headerType=_("固定値"), body=""):
+	def __init__(self, parent, key="", fieldType=_("固定値"), valueType="string", body=""):
 		super().__init__(
 			parent,
 			[
 				(_("フィールド名"), True),
 				(_("タイプ"), (_("固定値"), _("編集可能"))),
+				(_("型"), ("string","int","float","true","false","null")),
 				(_("値"), True),
 			],
-			[None]*3,
-			key,headerType,body
+			[None]*4,
+			key, fieldType, valueType, body
 		)
 
 	def Initialize(self):
-		return super().Initialize(_("body"))
+		super().Initialize(_("body"))
+		self.edits[2].Bind(wx.EVT_COMBOBOX, self.onChangeType)
+		return True
+
+	def onChangeType(self, event):
+		self.edits[3].Enable(self.edits[2].GetValue() in ("string","int","float"))
 
 	def Validation(self,event):
 		error = BodyField.validateName(self.edits[0].GetValue())
@@ -35,7 +41,7 @@ class BodyFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 			errorDialog(error, self.wnd)
 			return
 
-		error = BodyField.validateValue(BodyFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue())
+		error = BodyField.validateValueString(BodyFieldType[self.edits[1].GetStringSelection()], self.edits[2].GetValue(), self.edits[3].GetValue())
 		if error:
 			errorDialog(error, self.wnd)
 			return
@@ -45,6 +51,7 @@ class BodyFieldSettingDialog(views.KeyValueSettingDialogBase.SettingDialogBase):
 		return [
 			self.edits[0].GetValue().strip(),
 			self.edits[1].GetStringSelection(),
-			self.edits[2].GetValue().strip()
+			self.edits[2].GetStringSelection(),
+			self.edits[3].GetValue().strip(),
 		]
 
