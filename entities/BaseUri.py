@@ -2,7 +2,7 @@
 # ベースURIエンティティ
 #Copyright (C) 2023 yamahubuki <itiro.ishino@gmail.com>
 
-from urllib3.util.url import parse_url
+from urllib.util.url import parse_url
 
 ADDRESS_MIN_LENGTH = 10
 

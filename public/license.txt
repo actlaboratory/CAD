@@ -15,8 +15,6 @@ Copyright (c)2022 yamahubuki, ACT laboratory All rights reserved.
 
 ・MITライセンスに基づく以下のライブラリ
 	AccessibleOutput2　(https://pypi.org/project/accessible-output2/)
-	urllib3 (https://github.com/urllib3/urllib3/)
-		Copyright (c) 2008-2020 Andrey Petrov and contributors
 
 ・MS-PLに基づく以下のライブラリ
 	DotNetZip

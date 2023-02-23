@@ -8,7 +8,7 @@ import wx
 import views.KeyValueSettingArea
 import views.ViewCreator
 
-from urllib3.util.url import parse_url
+from urllib.util.url import parse_url
 
 from entities import BodyField, Endpoint, Header, Request, UriField
 from enumClasses import BodyFieldType, ContentType, HeaderFieldType, Method, UriFieldType

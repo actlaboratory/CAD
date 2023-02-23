@@ -15,7 +15,7 @@ from .Header import Header
 from .BaseUri import BaseUri
 from .Endpoint import Endpoint
 
-from urllib3.util.url import parse_url
+from urllib.util.url import parse_url
 
 
 URI_MIN_LENGTH = 10
