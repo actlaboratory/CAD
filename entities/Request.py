@@ -124,13 +124,10 @@ class Request:
 		req = requests.PreparedRequest()
 		req.prepare(self.method.name, self.uri, self.toHeaderDict(), data=self.toBodyString())
 
-		print(req.headers)
 		for i in self.headers:
 			if i.getFieldType() == HeaderFieldType.REMOVE:
-				print(i.getName())
 				if i.getName() in req.headers:
 					del req.headers[i.getName()]
-		print(req.headers)
 		return req
 
 	# --remote-nameオプション指定時に使用
