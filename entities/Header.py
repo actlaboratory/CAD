@@ -35,8 +35,8 @@ def validateName(name):
 def validateValue(fieldType, value):
 	assert isinstance(value, str)
 	value = value.strip()
-	if fieldType != HeaderFieldType.EDITABLE and not len(value):
-		return _("値を入力してください");
+	if fieldType == HeaderFieldType.REMOVE and value:
+		return _("削除の場合は価を入力しないでください。")
 	return ""
 
 def validateFieldType(fieldType):

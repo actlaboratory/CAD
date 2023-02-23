@@ -12,8 +12,9 @@ import globalVars
 
 from entities import Header, Request, Response, Traffic
 from enumClasses import HeaderFieldType
-from logging import getLogger
 
+from logging import getLogger
+from requests.structures import CaseInsensitiveDict
 
 log = getLogger("%s.%s" % (constants.LOG_PREFIX, "requestSender"))
 
@@ -24,6 +25,9 @@ class RequestSender:
 		req = request.toRequests()
 
 		with requests.Session() as sess:
+			# 初期値いらないのでつぶす
+			sess.headers = CaseInsensitiveDict()
+
 			requested_at = datetime.datetime.now()
 			try:
 				res = sess.send(req, allow_redirects=False, timeout=10)

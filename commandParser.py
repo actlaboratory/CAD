@@ -47,7 +47,7 @@ class CommandParser:
 				"値のないヘッダを送信する場合、:の代わりに;を指定します。この場合、:に置き換えて送信されます。" +
 				"改行コードは自動的に挿入去れるため、引数に含めないでください。" +
 				"@を使用したファイルの指定には対応していません。" +
-				"-L,--locationと併せて指定した場合、リダイレクト先にも送信されるため、セキュアな情報の指定をする際には注意してください。"
+				#"-L,--locationと併せて指定した場合、リダイレクト先にも送信されるため、セキュアな情報の指定をする際には注意してください。"
 				"このオプションは、複数回指定することで複数のヘッダを指定可能です。")
 		)
 		#parser.add_argument("-f", "--file")
@@ -129,9 +129,18 @@ def parse_headers(headers):
 	pattern = re.compile(r'^[\041-\071\073-\176]*:')	# 072=0x3A=:はダメ
 	result = []
 	for item in headers:
-		if not pattern.match(item):
+		# キーのみのヘッダ
+		if re.match(r'^[\041-\071\073-\176]*;$', item):
+			result.append(Header.Header(item[:-1], HeaderFieldType.CONST, ""))
+			continue
+		# 条件を満たさない
+		elif not pattern.match(item):
 			raise ValueError(_("ヘッダの指定が不正です。"))
 
 		i = item.find(':')
-		result.append(Header.Header(item[:i], HeaderFieldType.CONST, item[i+1:].lstrip()))
+		v = item[i+1:].lstrip()
+		if v:
+			result.append(Header.Header(item[:i], HeaderFieldType.CONST, v))
+		else:
+			result.append(Header.Header(item[:i], HeaderFieldType.REMOVE, ""))
 	return result

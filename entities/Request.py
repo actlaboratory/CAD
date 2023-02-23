@@ -91,7 +91,12 @@ class Request:
 
 		for k,v in self.toHeaderDict().items():
 			result.append("-H")
-			result.append(k+": "+v)
+			if i.getFieldType() == HeaderFieldType.REMOVE:
+				result.append(k+":")
+			elif v:	# 中身のあるv
+				result.append(k+": "+v)
+			else:
+				result.append(k+";")
 
 		result.append("-X")
 		result.append(self.method.name)
@@ -107,17 +112,25 @@ class Request:
 	def toHeaderDict(self):
 		headerDict = {}
 		for i in self.headers:
-			headerDict[i.getName()] = i.getValue()
+			if i.getFieldType() != HeaderFieldType.REMOVE:
+				headerDict[i.getName()] = i.getValue()
 
 		# case-insencitiveで比較して、Content-Typeがなければ追加
 		if self.body and "content-type" not in [v.getName().lower() for v in self.headers]:
 			headerDict["Content-Type"] = self.contentType.header_value
 		return headerDict
 
-
 	def toRequests(self):
 		req = requests.PreparedRequest()
 		req.prepare(self.method.name, self.uri, self.toHeaderDict(), data=self.toBodyString())
+
+		print(req.headers)
+		for i in self.headers:
+			if i.getFieldType() == HeaderFieldType.REMOVE:
+				print(i.getName())
+				if i.getName() in req.headers:
+					del req.headers[i.getName()]
+		print(req.headers)
 		return req
 
 	# --remote-nameオプション指定時に使用
