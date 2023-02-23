@@ -151,8 +151,8 @@ def parseBody(data, contentType):
 		if contentType == ContentType.JSON:
 			raise ValueError(_("JSONデータのパースに失敗しました。"))
 
-	if args.data and contentType == ContentType.FORM:
-		for arg in args.data.split("&"):
+	if data and contentType == ContentType.FORM:
+		for arg in data.split("&"):
 			if not arg:
 				continue
 			nv = arg.split('=', 1)
