@@ -5,6 +5,11 @@
 defaultKeymap={}
 
 defaultKeymap["mainView"]={
+	"FILE_SERVICE_PROVIDER":"",
+	"FILE_NEW_REQUEST":"ctrl+N",
+	"FILE_REQUEST_HISTORY":"",
+	"FILE_EXIT": "",
+
 	"EDIT_COPY":"Ctrl+C",
 
 	"OPTION_OPTION":"",

@@ -152,6 +152,7 @@ class Menu(BaseMenu):
 			"FILE_SERVICE_PROVIDER" : events.serviceProvider,
 			"FILE_NEW_REQUEST" : events.newRequest,
 			"FILE_REQUEST_HISTORY" : events.requestHistory,
+			"FILE_EXIT" : events.exit,
 		})
 
 		# 編集メニュー
@@ -197,6 +198,9 @@ class Events(BaseEvents):
 			self.parent.showData(d.GetValue())
 		elif result == wx.ID_RETRY:
 			pass
+
+	def exit(self,event):
+		self.parent.hFrame.Close()
 
 	def copy(self, event):
 		if self.parent.tree.HasFocus():

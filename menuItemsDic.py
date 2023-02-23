@@ -12,6 +12,7 @@ dic={
 	"FILE_SERVICE_PROVIDER":_("サービスプロバイダ一覧")+"...",
 	"FILE_NEW_REQUEST":_("新規リクエスト(&N)")+"...",
 	"FILE_REQUEST_HISTORY":_("履歴(&H)")+"...",
+	"FILE_EXIT": _("終了(&X)"),
 
 	"EDIT_COPY":_("コピー(&C)"),
 
