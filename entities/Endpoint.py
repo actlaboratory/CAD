@@ -10,7 +10,7 @@ from .BodyField import BodyField
 from .Header import Header
 from .UriField import UriField
 
-from urllib.util.url import parse_url
+from urllib3.util.url import parse_url
 
 class Endpoint:
 
