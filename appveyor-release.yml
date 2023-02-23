@@ -38,15 +38,15 @@ after_test:
   - "%PYTHON%\\python.exe tools\\build.py --appveyor"
 
 artifacts:
-  - path: NPC-*.zip
-  - path: NPC-*.json
+  - path: CAD-*.zip
+  - path: CAD-*.json
 
 deploy:
   - provider: GitHub
-    description: "NPC official release"
+    description: "CAD official release"
     auth_token:
       secure: iNSx8v6c+0TP9IyckinrvNWuX+hc7SKruOqRDl9GxdX59sZ2yqB8+UDAtqdPzKIg
-    artifact: /(NPC-.*\.zip)|(NPC-.*\.json)/
+    artifact: /(CAD-.*\.zip)|(CAD-.*\.json)/
     draft: true
     prerelease: false
     on:
