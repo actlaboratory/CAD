@@ -14,8 +14,8 @@ APP_LAST_RELEASE_DATE="2023-02-23"
 APP_COPYRIGHT_YEAR="2023"
 APP_LICENSE="Apache License 2.0"
 APP_DEVELOPERS="yamahubuki,ACT Laboratory"
-APP_DEVELOPERS_URL="https://actlab.com/"
-APP_DETAILS_URL="https://actlab.com/softwares/CAD"
+APP_DEVELOPERS_URL="https://actlab.org/"
+APP_DETAILS_URL="https://actlab.org/software/CAD"
 APP_COPYRIGHT_MESSAGE = "Copyright (c) %s %s All lights reserved." % (APP_COPYRIGHT_YEAR, APP_DEVELOPERS)
 
 SUPPORTING_LANGUAGE={"ja-JP": "日本語","en-US": "English"}
