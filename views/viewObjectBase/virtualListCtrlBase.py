@@ -50,7 +50,7 @@ class virtualListCtrl(listCtrlBase.listCtrl):
         return self.insert(index,[label])
 
     def SetItem(self,index,column=0,label=None,imageId=-1):
-        if not isinstance(index,int) or label==None or type(label)!=str or imageId!=-1:
+        if type(index)!=int or label==None or type(label)!=str or imageId!=-1:
             raise NotImplementedError
         if column<0:
             raise ValueError
