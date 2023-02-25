@@ -39,7 +39,7 @@ HALF_CHECKED=wx.CHK_UNDETERMINED
 FULL_CHECKED=wx.CHK_CHECKED
 
 #build関連定数
-BASE_PACKAGE_URL = None
+BASE_PACKAGE_URL = "https://github.com/actlaboratory/CAD/releases/download/0.1.0/CAD-0.1.0.zip"
 PACKAGE_CONTAIN_ITEMS = ()#パッケージに含めたいファイルやfolderがあれば指定
 NEED_HOOKS = ()#pyinstallerのhookを追加したい場合は指定
 STARTUP_FILE = "cad.py"#起動用ファイルを指定
