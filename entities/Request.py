@@ -94,7 +94,7 @@ class Request:
 
 		for k,v in self.toHeaderDict().items():
 			result.append("-H")
-			if i.getFieldType() == HeaderFieldType.REMOVE:
+			if v.getFieldType() == HeaderFieldType.REMOVE:
 				result.append(k+":")
 			elif v:	# 中身のあるv
 				result.append(k+": "+v)
