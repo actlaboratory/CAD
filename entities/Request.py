@@ -92,14 +92,14 @@ class Request:
 	def toCurlCommand(self):
 		result = ["curl"]
 
-		for k,v in self.toHeaderDict().items():
+		for i in self.headers:
 			result.append("-H")
-			if v.getFieldType() == HeaderFieldType.REMOVE:
-				result.append(k+":")
-			elif v:	# 中身のあるv
-				result.append(k+": "+v)
+			if i.getFieldType() == HeaderFieldType.REMOVE:
+				result.append(i.getName()+":")
+			elif i.getValue():	# 中身のあるv
+				result.append(i.getName()+": "+i.getValue())
 			else:
-				result.append(k+";")
+				result.append(i.getName()+";")
 
 		result.append("-X")
 		result.append(self.method.name)
