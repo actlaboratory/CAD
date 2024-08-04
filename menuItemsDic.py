@@ -15,6 +15,7 @@ dic={
 	"FILE_EXIT": _("終了(&X)"),
 
 	"EDIT_COPY":_("コピー(&C)"),
+	"EDIT_COPY_UNDER":_("下の要素をコピー(&U)"),
 
 	"OPTION_OPTION":_("オプション(&O)")+"...",
 	"OPTION_KEY_CONFIG":_("ショートカットキーの設定(&K)")+"...",

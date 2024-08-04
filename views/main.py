@@ -164,6 +164,7 @@ class Menu(BaseMenu):
 		# 編集メニュー
 		self.RegisterMenuCommand(self.hEditMenu,{
 			"EDIT_COPY": events.copy,
+			"EDIT_COPY_UNDER": events.copyUnder,
 		})
 
 		self.RegisterMenuCommand(self.hOptionMenu,{
@@ -179,6 +180,7 @@ class Menu(BaseMenu):
 
 		#メニューバーの生成
 		self.hMenuBar.Append(self.hFileMenu,_("ファイル"))
+		self.hMenuBar.Append(self.hEditMenu,_("編集"))
 		self.hMenuBar.Append(self.hOptionMenu,_("オプション(&O)"))
 		self.hMenuBar.Append(self.hHelpMenu,_("ヘルプ"))
 		target.SetMenuBar(self.hMenuBar)
@@ -218,6 +220,15 @@ class Events(BaseEvents):
 			event.Skip()
 			return
 		pyperclip.copy(target)
+
+	def copyUnder(self, event):
+		if self.parent.tree.HasFocus():
+			target = self.parent.tree.GetItemData(self.parent.tree.GetFocusedItem())
+		else:
+			# 処理できないのでとりあえず上に投げておく
+			event.Skip()
+			return
+		pyperclip.copy(json.dumps(target, ensure_ascii=False, indent=4))
 
 	def option(self, event):
 		d = settingsDialog.Dialog()
