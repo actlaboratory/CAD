@@ -21,12 +21,14 @@ from views.HeaderSettingDialog import *
 class RequestEditDialog(BaseDialog):
 	def __init__(self):
 		super().__init__("RequestDialog")
+		self.fixed = False
 
 	def InitializeFromEndpoint(self, parent, provider, endpoint):
 		super().Initialize(parent,_("リクエスト内容編集"))
 		self.provider = provider
 		self.endpoint = endpoint
 		self.log.debug("created with" + provider.getName() and endpoint.getName())
+		self.fixed = True
 
 		# デフォルトの定義
 		defaults = {
@@ -53,6 +55,28 @@ class RequestEditDialog(BaseDialog):
 				defaults["headers"].append(i)
 
 		self.InstallControls(defaults)
+		return True
+
+	def InitializeFromRequest(self, parent, request):
+		super().Initialize(parent,_("リクエスト内容編集"))
+		self.log.debug("created from request")
+
+		# デフォルトの定義
+		defaults = {
+			"name" : request.getName(),
+			"contentType" : request.getContentType(),
+			"headers" : [],
+			"aditionalHeaders" : request.getHeaders(),
+			"method" : request.getMethod(),
+			"uri" : request.getUri(),
+			"body" : [],
+			"aditionalBodys" : request.getBody(),
+			"memo" : request.getMemo(),
+			"baseUris" : [],
+			"uriFields" : [],
+		}
+
+		self.InstallControls(defaults, True)
 		return True
 
 	def InitializeNewRequest(self, parent):
@@ -86,14 +110,15 @@ class RequestEditDialog(BaseDialog):
 		self.name, dummy = grid.inputbox(_("名前"), None, defaults["name"], wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 		self.name.hideScrollBar(wx.HORIZONTAL)
 		self.name.SetMaxSize((600,200))
-		if defaults["name"]:
+		if defaults["name"] and self.fixed:
 			self.name.Hide()
 
 		# URI
 		self.uri, dummy = grid.inputbox(_("URI"), None, defaults["uri"], wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
 		self.uri.hideScrollBar(wx.HORIZONTAL)
 		if defaults["baseUris"]:
-			self.uri.Hide()
+			if self.fixed:
+				self.uri.Hide()
 			# ベースURI
 			self.baseUris, dummy = grid.combobox(_("ベースURI"), ["%s (%s)" %(item.getName(),item.getAddress()) for item in defaults["baseUris"]], state=0)
 			self.baseUris.SetMaxSize((600,200))
@@ -105,7 +130,7 @@ class RequestEditDialog(BaseDialog):
 		if defaults["method"]:
 			state = defaults["method"].value
 		self.method, dummy = grid.combobox(_("メソッド"), [item.name for item in Method], None, state=state)
-		if defaults["method"] is not None:
+		if defaults["method"] is not None and self.fixed:
 			self.method.Hide()
 
 		# contentType
@@ -113,7 +138,7 @@ class RequestEditDialog(BaseDialog):
 		if defaults["contentType"]:
 			state = defaults["contentType"].value
 		self.contentType, dummy = grid.combobox(_("通信形式"), ["application/json","application/x-www-form-urlencoded"], None, state=state)
-		if defaults["contentType"] is not None:
+		if defaults["contentType"] is not None and self.fixed:
 			self.contentType.Hide()
 
 		# ヘッダ
@@ -131,6 +156,12 @@ class RequestEditDialog(BaseDialog):
 		# 追加ヘッダ
 		self.aditionalHeaders = None
 		if showAditionalEdit:
+			tmp1 = {}
+			tmp2 = {}
+			for i in defaults["aditionalHeaders"]:
+				tmp1[i.getName()] = i.getFieldType().view_name
+				tmp2[i.getName()] = i.getValue()
+
 			self.aditionalHeaders = views.KeyValueSettingArea.KeyValueSettingArea(
 				"headers",
 				HeaderSettingDialog,
@@ -139,8 +170,8 @@ class RequestEditDialog(BaseDialog):
 					(_("値の種類"), 0, 200),
 					(_("値"),0, 300)
 				],
-				{},
-				{},
+				tmp1,
+				tmp2,
 			)
 			self.aditionalHeaders.Initialize(self.wnd, creator, _("ヘッダ"))
 
@@ -171,6 +202,15 @@ class RequestEditDialog(BaseDialog):
 		# 追加body
 		self.aditionalBodyFields=None
 		if showAditionalEdit:
+
+			tmp1 = {}
+			tmp2 = {}
+			tmp3 = {}
+			for i in defaults["aditionalBodys"]:
+				tmp1[i.getName()] = i.getFieldType().view_name
+				tmp2[i.getName()] = i.getValueTypeString()
+				tmp3[i.getName()] = i.getStringValue()
+
 			self.aditionalBodyFields = views.KeyValueSettingArea.KeyValueSettingArea(
 				"Body",
 				BodyFieldSettingDialog,
@@ -180,9 +220,9 @@ class RequestEditDialog(BaseDialog):
 					(_("型"), 0, 130),
 					(_("値"),0, 300)
 				],
-				{},
-				{},
-				{},
+				tmp1,
+				tmp2,
+				tmp3,
 			)
 			self.aditionalBodyFields.Initialize(self.wnd, creator, _("Body"))
 
@@ -277,18 +317,15 @@ class RequestEditDialog(BaseDialog):
 
 		body = []
 		names = []
-		print(self.aditionalBodyFields)
 		if self.aditionalBodyFields:
 			values = self.aditionalBodyFields.GetValue()
-			print(values)
 			names = list(values[0].keys())
-			print(names)
 			fieldTypes = list(values[0].values())
 			valueTypes = list(values[1].values())
 			values = list(values[2].values())
 			for i in range(len(names)):
 				body.append(BodyField.generateFromString(names[i], fieldTypes[i], valueTypes[i], values[i]))
-			print(body)
+
 		for k,v in self.body.items():
 			if k in names:
 				continue
@@ -296,7 +333,7 @@ class RequestEditDialog(BaseDialog):
 				body.append(BodyField.generateFromString(k, "CONST", self.bodyValueType[k], v.GetValue()))
 			else:
 				body.append(BodyField.BodyField(k, BodyFieldType.CONST, v))
-		print(body)
+
 		return Request.Request(
 			self.name.GetValue(),
 			ContentType(self.contentType.GetSelection()),

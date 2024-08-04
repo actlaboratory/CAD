@@ -9,6 +9,7 @@ import menuItemsStore
 import RequestSender
 import simpleDialog
 import views.ViewCreator
+import views.RequestEditDialog
 
 from views.base import BaseMenu
 from views.baseDialog import *
@@ -94,7 +95,13 @@ class RequestHistoryDialog(BaseDialog):
 		index = self.list.GetFocusedItem()
 		if index < 0:
 			return
-		target = self.lst[index]
+		target = self.lst[index].getRequest()
+		d = views.RequestEditDialog.RequestEditDialog()
+		d.InitializeFromRequest(self.wnd,target)
+		if d.Show() == wx.ID_CANCEL:
+			return
+		self.target = RequestSender.RequestSender.send(d.GetData())
+		self.wnd.EndModal(wx.ID_VIEW_DETAILS)
 		return
 
 	def delete(self, event=None):
@@ -153,7 +160,4 @@ class RequestHistoryDialog(BaseDialog):
 		pyperclip.copy(target.getRequest().toCurlCommand())
 
 	def GetData(self):
-		if self.target:
-			return self.target
-		else:
-			return None
+		return self.target
