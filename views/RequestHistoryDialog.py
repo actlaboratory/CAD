@@ -88,7 +88,7 @@ class RequestHistoryDialog(BaseDialog):
 		if index < 0:
 			return
 		target = self.lst[index]
-		self.target = RequestSender.RequestSender.send(target.getRequest()).toTreeData()
+		self.target = RequestSender.RequestSender.send(target.getRequest())
 		self.wnd.EndModal(wx.ID_VIEW_DETAILS)
 
 	def edit(self, event=None):
@@ -100,7 +100,7 @@ class RequestHistoryDialog(BaseDialog):
 		d.InitializeFromRequest(self.wnd,target)
 		if d.Show() == wx.ID_CANCEL:
 			return
-		self.target = RequestSender.RequestSender.send(d.GetData()).toTreeData()
+		self.target = RequestSender.RequestSender.send(d.GetData())
 		self.wnd.EndModal(wx.ID_VIEW_DETAILS)
 		return
 
