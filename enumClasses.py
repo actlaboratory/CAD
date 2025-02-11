@@ -57,6 +57,8 @@ class HeaderFieldTypeEnumMeta(EnumMeta):
 			return super().__getitem__("EDITABLE")
 		elif value == _("選択"):
 			return super().__getitem__("SELECT")
+		elif value == _("固定値選択"):
+			return super().__getitem__("CONST_SELECT")
 		elif value == _("削除"):
 			return super().__getitem__("REMOVE")
 		else:
@@ -66,8 +68,9 @@ class HeaderFieldTypeEnumMeta(EnumMeta):
 class HeaderFieldType(IntEnum, metaclass=HeaderFieldTypeEnumMeta):
 	CONST = 0
 	EDITABLE = 1
-	SELECT = 2
-	REMOVE = 3
+	CONST_SELECT = 2
+	SELECT = 3
+	REMOVE = 4
 
 	@property
 	def view_name(self):
@@ -76,12 +79,17 @@ class HeaderFieldType(IntEnum, metaclass=HeaderFieldTypeEnumMeta):
 			return _("固定値")
 		elif self._name_ == "EDITABLE":
 			return _("編集可能")
+		elif self._name_ == "CONST_SELECT":
+			return _("固定値選択")
 		elif self._name_ == "SELECT":
 			return _("選択")
 		elif self._name_ == "REMOVE":
 			return _("削除")
 		else:
 			raise ValueError(self._name_)
+
+	def isChoice(self):
+		return self._name_ in ["SELECT", "CONST_SELECT"]
 
 class Method(IntEnum):
 	GET = 0

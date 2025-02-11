@@ -51,7 +51,6 @@ class RequestEditDialog(BaseDialog):
 				defaults["headers"].append(i)
 		for i in provider.getHeaders():
 			if i.getName() not in tmp:
-				tmp.append(i.getName())
 				defaults["headers"].append(i)
 
 		self.InstallControls(defaults)
@@ -89,8 +88,10 @@ class RequestEditDialog(BaseDialog):
 			"method" : None,
 			"contentType" : None,
 			"headers" : [],
+			"aditionalHeaders" : [],
 			"uriFields" : [],
 			"body" : [],
+			"aditionalBodys": [],
 			"memo" : "",
 		}
 
@@ -148,7 +149,16 @@ class RequestEditDialog(BaseDialog):
 				self.headers[item.getName()] = item.getValue()
 			elif item.getFieldType() == HeaderFieldType.EDITABLE:
 				form,dummy = grid.inputbox(_("%sヘッダ" % item.getName()), None, item.getValue(), wx.BORDER_RAISED, 400, sizerFlag=wx.ALL|wx.EXPAND)
+				form.obj = item
 				form.hideScrollBar(wx.HORIZONTAL)
+				self.headers[item.getName()] = form
+			elif item.getFieldType() == HeaderFieldType.SELECT:
+				form,dummy = grid.combobox(_("%sヘッダ" % item.getName()), list(json.loads(item.getValue()).keys()), style=wx.BORDER_RAISED, x=400, sizerFlag=wx.ALL|wx.EXPAND)
+				form.obj = item
+				self.headers[item.getName()] = form
+			elif item.getFieldType() == HeaderFieldType.CONST_SELECT:
+				form,dummy = grid.combobox(_("%sヘッダ" % item.getName()), list(json.loads(item.getValue()).keys()), style=wx.CB_READONLY|wx.BORDER_RAISED, x=400, sizerFlag=wx.ALL|wx.EXPAND)
+				form.obj = item
 				self.headers[item.getName()] = form
 			else:
 				raise NotImplementedError()
@@ -164,7 +174,7 @@ class RequestEditDialog(BaseDialog):
 
 			self.aditionalHeaders = views.KeyValueSettingArea.KeyValueSettingArea(
 				"headers",
-				HeaderSettingDialog,
+				FixedHeaderSettingDialog,
 				[
 					(_("フィールド名"), 0, 200),
 					(_("値の種類"), 0, 200),
@@ -251,7 +261,11 @@ class RequestEditDialog(BaseDialog):
 
 		for k,v in self.headers.items():
 			if type(v) != str:
-				error = Header.validateValue(HeaderFieldType.CONST, v.GetValue())
+				valueString = v.GetValue()
+				if v.obj.getFieldType().isChoice() and v.GetSelection() != wx.NOT_FOUND:
+					valueString = list(json.loads(v.obj.getValue()).values())[v.GetSelection()]
+
+				error = Header.validateValue(HeaderFieldType.CONST, valueString)
 				if error:
 					errorDialog(error, self.wnd)
 					return
@@ -313,7 +327,10 @@ class RequestEditDialog(BaseDialog):
 			if type(v) == str:
 				headers.append(Header.Header(k, HeaderFieldType.CONST, v))
 			else:
-				headers.append(Header.Header(k, HeaderFieldType.CONST, v.GetValue()))
+				valueString = v.GetValue()
+				if v.obj.getFieldType().isChoice() and v.GetSelection() != wx.NOT_FOUND:
+					valueString = list(json.loads(v.obj.getValue()).values())[v.GetSelection()]
+				headers.append(Header.Header(k, HeaderFieldType.CONST, valueString))
 
 		body = []
 		names = []

@@ -21,7 +21,6 @@ class Header:
 	def getValue(self):
 		return self.value
 
-
 def validateName(name):
 	assert isinstance(name, str)
 	name = name.strip()

@@ -270,7 +270,7 @@ class SettingDialogBase(BaseDialog):
 				self.edits[i].GetParent().Hide()
 			else:
 				raise TypeError("object type must be str,bool,None, or iterable.")
-			if self.buttons[i]:
+			if len(self.buttons) > i and  self.buttons[i]:
 				self.buttonObjects[i]=self.creator.button(self.buttons[i][0],self.buttons[i][1],sizerFlag=wx.ALIGN_BOTTOM | wx.BOTTOM, margin=10)
 
 		#ボタンエリア
